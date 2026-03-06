@@ -5,6 +5,7 @@ export type {
   Category,
   Expense,
   Schedule,
+  AnonymousStat,
   InsertExpense,
   UpdateExpense,
   InsertCategory,
