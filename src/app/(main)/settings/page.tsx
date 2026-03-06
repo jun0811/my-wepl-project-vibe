@@ -2,6 +2,7 @@
 
 import { Card, Button } from "@/shared/ui";
 import { InstallBanner } from "@/shared/ui/install-banner";
+import { KakaoShareButton } from "@/shared/ui/kakao-share";
 import { useIsAuthenticated, useSignOut } from "@/features/auth";
 import Link from "next/link";
 
@@ -105,8 +106,18 @@ export default function SettingsPage() {
         </ul>
       </Card>
 
-      {/* Install App */}
-      <div className="mt-5">
+      {/* Share & Install */}
+      {isAuthenticated && (
+        <Card className="mt-5">
+          <p className="mb-3 text-sm font-medium text-neutral-700">친구에게 추천하기</p>
+          <KakaoShareButton
+            className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-[#FEE500] text-sm font-medium text-[#191919] transition-colors active:bg-[#EACF00]"
+            description="결혼 준비 비용 관리, 웨플로 함께 해요!"
+          />
+        </Card>
+      )}
+
+      <div className="mt-3">
         <InstallBanner variant="card" />
       </div>
 

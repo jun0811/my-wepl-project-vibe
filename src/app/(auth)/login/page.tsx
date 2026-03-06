@@ -38,7 +38,7 @@ export default function LoginPage() {
 
         <Link href="/home" className="block">
           <Button variant="ghost" fullWidth>
-            체험 모드로 둘러보기
+            서비스 둘러보기
           </Button>
         </Link>
       </div>
