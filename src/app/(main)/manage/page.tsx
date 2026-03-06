@@ -36,7 +36,9 @@ export default function ManagePage() {
   }
   const displayCategories = isTrial ? TRIAL_CATEGORIES : (categories ?? []);
 
-  const expenseByCategory = (allExpenses ?? []).reduce<Record<string, { total: number; count: number }>>(
+  const paidExpenses = (allExpenses ?? []).filter((e) => e.is_paid);
+
+  const expenseByCategory = paidExpenses.reduce<Record<string, { total: number; count: number }>>(
     (acc, exp) => {
       if (!acc[exp.category_id]) acc[exp.category_id] = { total: 0, count: 0 };
       acc[exp.category_id].total += exp.amount;
