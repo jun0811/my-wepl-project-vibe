@@ -45,16 +45,14 @@ export default function HomePage() {
     ? TRIAL_TOTAL_BUDGET
     : (couple?.total_budget ?? 0);
 
-  const paidOnly = expenses.filter((e) => e.is_paid);
-
-  const expenseByCategory = paidOnly.reduce<Record<string, number>>((acc, exp) => {
+  const expenseByCategory = expenses.reduce<Record<string, number>>((acc, exp) => {
     acc[exp.category_id] = (acc[exp.category_id] ?? 0) + exp.amount;
     return acc;
   }, {});
 
   const totalExpense = isTrial
     ? TRIAL_TOTAL_EXPENSE
-    : paidOnly.reduce((sum, e) => sum + e.amount, 0);
+    : expenses.reduce((sum, e) => sum + e.amount, 0);
 
   const percentage = totalBudget > 0 ? Math.round((totalExpense / totalBudget) * 100) : 0;
   const remaining = totalBudget - totalExpense;

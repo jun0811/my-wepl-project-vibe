@@ -31,7 +31,7 @@ export default function CategoryDetailPage({
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
 
   const category = categories.find((c) => c.id === categoryId);
-  const totalExpense = expenses.filter((e) => e.is_paid).reduce((sum, e) => sum + e.amount, 0);
+  const totalExpense = expenses.reduce((sum, e) => sum + e.amount, 0);
 
   if (!category) {
     return (
