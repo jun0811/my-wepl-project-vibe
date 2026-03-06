@@ -178,7 +178,7 @@ export default function HomePage() {
               {remaining >= 0 ? (
                 <>
                   <span className="text-neutral-500">남은 예산 </span>
-                  <span className="font-semibold text-secondary-600">
+                  <span className="font-semibold text-neutral-600">
                     {formatCurrency(remaining)}원
                   </span>
                 </>
