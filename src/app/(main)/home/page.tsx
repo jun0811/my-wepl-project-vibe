@@ -1,14 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { Card } from "@/shared/ui";
 import { ProgressBar } from "@/shared/ui/progress-bar";
-import { formatCurrency, formatDday, calculateDday } from "@/shared/lib/format";
+import { formatCurrency, formatDday, formatDate, calculateDday } from "@/shared/lib/format";
 import { useIsAuthenticated } from "@/features/auth";
 import { useCategories, useExpenses } from "@/features/expense";
-import { MonthlyChart } from "@/features/expense/components/monthly-chart";
 import { useSchedules } from "@/features/schedule";
-import { GuideChecklist } from "@/features/onboarding";
+import { GuideChecklist, WeddingPrepGuide } from "@/features/onboarding";
 
 import {
   TRIAL_WEDDING_DATE,
@@ -27,6 +27,8 @@ export default function HomePage() {
   const { data: categories = [] } = useCategories(coupleId);
   const { data: expenses = [] } = useExpenses(coupleId);
   const { data: schedules = [] } = useSchedules(coupleId);
+
+  const [showAllCategories, setShowAllCategories] = useState(false);
 
   const isTrial = !isLoading && !isAuthenticated;
 
@@ -70,6 +72,26 @@ export default function HomePage() {
         expense: expenseByCategory[cat.id] ?? 0,
       }));
 
+  // Sort: over-budget first, then by expense ratio descending
+  const sortedCategories = [...categoryData].sort((a, b) => {
+    const aOver = a.budget > 0 && a.expense > a.budget ? 1 : 0;
+    const bOver = b.budget > 0 && b.expense > b.budget ? 1 : 0;
+    if (aOver !== bOver) return bOver - aOver;
+    const aRatio = a.budget > 0 ? a.expense / a.budget : 0;
+    const bRatio = b.budget > 0 ? b.expense / b.budget : 0;
+    return bRatio - aRatio;
+  });
+
+  const displayCategories = showAllCategories ? sortedCategories : sortedCategories.slice(0, 3);
+
+  // Merge recent activity: pending first, then paid, max 3
+  const pendingExpenses = isTrial
+    ? TRIAL_PENDING_EXPENSES
+    : expenses
+        .filter((e) => !e.is_paid && e.amount > 0)
+        .slice(0, 5)
+        .map((e) => ({ title: e.title, amount: e.amount, date: e.date ?? "", isPending: true }));
+
   const paidExpenses = isTrial
     ? TRIAL_PAID_EXPENSES
     : expenses
@@ -77,12 +99,10 @@ export default function HomePage() {
         .slice(0, 5)
         .map((e) => ({ title: e.title, amount: e.amount, date: e.date ?? "" }));
 
-  const pendingExpenses = isTrial
-    ? TRIAL_PENDING_EXPENSES
-    : expenses
-        .filter((e) => !e.is_paid && e.amount > 0)
-        .slice(0, 5)
-        .map((e) => ({ title: e.title, amount: e.amount, date: e.date ?? "" }));
+  const recentActivity = [
+    ...pendingExpenses.map((e) => ({ ...e, isPending: true })),
+    ...paidExpenses.map((e) => ({ ...e, isPending: false })),
+  ].slice(0, 3);
 
   return (
     <div className="hide-scrollbar overflow-y-auto px-5 pt-6 pb-4">
@@ -96,38 +116,46 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* D-day Header */}
+      {/* D-day Hero */}
       <section className="mb-6">
-        <div className="flex items-baseline gap-3">
-          {dday !== null ? (
-            <>
-              <span className="text-3xl font-bold text-primary-500">
-                {formatDday(dday)}
-              </span>
-              <span className="text-sm text-neutral-500">우리의 결혼식까지</span>
-            </>
-          ) : (
-            <span className="text-lg font-semibold text-neutral-700">
-              결혼 준비를 시작해볼까요?
-            </span>
-          )}
-        </div>
+        {dday !== null ? (
+          <div className="rounded-2xl bg-gradient-to-br from-primary-50 to-primary-100 px-5 py-5">
+            <p className="text-sm font-medium text-primary-400">
+              {profile?.nickname ? `${profile.nickname}님의 결혼식까지` : "우리의 결혼식까지"}
+            </p>
+            <p className="mt-1 text-4xl font-bold text-primary-600">{formatDday(dday)}</p>
+            <div className="mt-3 flex flex-col gap-0.5">
+              {couple?.wedding_date && (
+                <p className="text-sm text-primary-500">{formatDate(couple.wedding_date)}</p>
+              )}
+              {couple?.wedding_hall && (
+                <p className="text-sm font-medium text-primary-700">{couple.wedding_hall}</p>
+              )}
+            </div>
+          </div>
+        ) : (
+          <span className="text-lg font-semibold text-neutral-700">
+            결혼 준비를 시작해볼까요?
+          </span>
+        )}
       </section>
 
-      {/* Guide Checklist */}
-      {isAuthenticated && (
-        <section className="mb-4">
-          <GuideChecklist
-            items={[
-              { label: "총 예산 설정하기", completed: totalBudget > 0, href: "/settings/budget" },
-              { label: "카테고리 예산 배분하기", completed: categories.some((c) => c.budget_amount > 0), href: "/settings/budget" },
-              { label: "첫 지출 기록하기", completed: expenses.length > 0, href: "/manage" },
-              { label: "파트너 초대하기", completed: false, href: "/settings/partner" },
-              { label: "일정 등록하기", completed: schedules.length > 0, href: "/schedule" },
-            ]}
-          />
-        </section>
-      )}
+      {/* Guide Checklist - hide when all completed */}
+      {isAuthenticated && (() => {
+        const guideItems = [
+          { label: "총 예산 설정하기", completed: totalBudget > 0, href: "/settings/budget" },
+          { label: "카테고리 예산 배분하기", completed: categories.some((c) => c.budget_amount > 0), href: "/settings/budget" },
+          { label: "첫 지출 기록하기", completed: expenses.length > 0, href: "/manage" },
+          { label: "파트너 초대하기", completed: false, href: "/settings/partner" },
+          { label: "일정 등록하기", completed: schedules.length > 0, href: "/schedule" },
+        ];
+        if (guideItems.every((i) => i.completed)) return null;
+        return (
+          <section className="mb-4">
+            <GuideChecklist items={guideItems} />
+          </section>
+        );
+      })()}
 
       {/* Budget Overview */}
       <Link href={isAuthenticated ? "/settings/budget" : "/login"}>
@@ -136,7 +164,7 @@ export default function HomePage() {
             <h2 className="text-base font-semibold text-neutral-900">
               예산 대비 지출
             </h2>
-            <span className={`text-2xl font-bold ${remaining < 0 ? "text-error" : "text-primary-500"}`}>
+            <span className={`text-2xl font-bold ${remaining < 0 ? "text-primary-600" : "text-primary-500"}`}>
               {percentage}%
             </span>
           </div>
@@ -157,7 +185,7 @@ export default function HomePage() {
               ) : (
                 <>
                   <span className="text-neutral-500">초과 </span>
-                  <span className="font-semibold text-error">
+                  <span className="font-semibold text-primary-600">
                     {formatCurrency(Math.abs(remaining))}원
                   </span>
                 </>
@@ -169,13 +197,23 @@ export default function HomePage() {
 
       {/* Category Progress */}
       <section className="mb-4">
-        <h3 className="mb-3 text-sm font-semibold text-neutral-700">
-          카테고리별 현황
-        </h3>
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-neutral-700">
+            카테고리별 현황
+          </h3>
+          <Link href="/manage" className="text-xs text-neutral-400">
+            전체보기
+          </Link>
+        </div>
         <div className="flex flex-col gap-2.5">
-          {categoryData.map((cat) => {
+          {displayCategories.map((cat) => {
+            const pct = cat.budget > 0 ? Math.round((cat.expense / cat.budget) * 100) : 0;
             const inner = (
-              <Card key={cat.id} padding="sm" className="flex cursor-pointer items-center gap-3 transition-colors active:bg-neutral-50">
+              <Card
+                key={cat.id}
+                padding="sm"
+                className="flex cursor-pointer items-center gap-3 transition-colors active:bg-neutral-50"
+              >
                 <div className="flex-1">
                   <div className="mb-1 flex items-center justify-between">
                     <span className="text-sm font-medium">{cat.name}</span>
@@ -183,6 +221,11 @@ export default function HomePage() {
                       <span className="text-neutral-500">지출</span> {formatCurrency(cat.expense)}
                       <span className="mx-0.5 text-neutral-300">/</span>
                       <span className="text-neutral-500">예산</span> {formatCurrency(cat.budget)}원
+                      {pct > 0 && (
+                        <span className={`ml-1 font-medium ${pct > 100 ? "text-primary-500" : "text-neutral-500"}`}>
+                          {pct}%
+                        </span>
+                      )}
                     </span>
                   </div>
                   <ProgressBar
@@ -204,48 +247,46 @@ export default function HomePage() {
             );
           })}
         </div>
+        {sortedCategories.length > 3 && (
+          <button
+            onClick={() => setShowAllCategories(!showAllCategories)}
+            className="mt-2 w-full text-center text-xs text-neutral-400"
+          >
+            {showAllCategories ? "접기" : `${sortedCategories.length - 3}개 더보기`}
+          </button>
+        )}
       </section>
 
-      {/* Monthly Trend */}
-      {!isTrial && expenses.length > 0 && (
-        <section className="mb-4">
-          <h3 className="mb-3 text-sm font-semibold text-neutral-700">월별 지출 추이</h3>
-          <Card>
-            <MonthlyChart expenses={expenses} />
-          </Card>
-        </section>
-      )}
-
-      {/* Pending Expenses */}
-      <section className="mb-4">
-        <h3 className="mb-3 text-sm font-semibold text-neutral-700">
-          결제 대기
-          {pendingExpenses.length > 0 && (
-            <span className="ml-1.5 text-xs font-normal text-amber-500">
-              {pendingExpenses.length}건
-            </span>
-          )}
-        </h3>
+      {/* Recent Activity */}
+      <section>
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-neutral-700">최근 활동</h3>
+          <Link href="/manage" className="text-xs text-neutral-400">
+            전체보기
+          </Link>
+        </div>
         <Card>
-          {pendingExpenses.length === 0 ? (
+          {recentActivity.length === 0 ? (
             <p className="py-4 text-center text-sm text-neutral-400">
-              대기 중인 결제가 없어요
+              아직 등록된 내역이 없어요
             </p>
           ) : (
             <div className="divide-y divide-neutral-50">
-              {pendingExpenses.map((expense, i) => (
+              {recentActivity.map((item, i) => (
                 <div key={i} className="flex items-center justify-between py-2.5">
                   <div>
-                    <p className="text-sm font-medium">{expense.title}</p>
-                    <p className="text-xs text-neutral-400">{expense.date}</p>
+                    <p className="text-sm font-medium">{item.title}</p>
+                    <p className="text-xs text-neutral-400">{item.date}</p>
                   </div>
                   <div className="flex flex-col items-end">
                     <span className="text-sm font-semibold">
-                      {formatCurrency(expense.amount)}원
+                      {formatCurrency(item.amount)}원
                     </span>
-                    <span className="mt-0.5 inline-block rounded bg-amber-50 px-1.5 py-0.5 text-xs text-amber-600">
-                      결제대기
-                    </span>
+                    {item.isPending && (
+                      <span className="mt-0.5 inline-block rounded bg-amber-50 px-1.5 py-0.5 text-xs text-amber-600">
+                        결제대기
+                      </span>
+                    )}
                   </div>
                 </div>
               ))}
@@ -254,31 +295,18 @@ export default function HomePage() {
         </Card>
       </section>
 
-      {/* Recent Paid Expenses */}
-      <section>
-        <h3 className="mb-3 text-sm font-semibold text-neutral-700">최근 지출</h3>
-        <Card>
-          {paidExpenses.length === 0 ? (
-            <p className="py-4 text-center text-sm text-neutral-400">
-              아직 결제 완료된 내역이 없어요
-            </p>
-          ) : (
-            <div className="divide-y divide-neutral-50">
-              {paidExpenses.map((expense, i) => (
-                <div key={i} className="flex items-center justify-between py-2.5">
-                  <div>
-                    <p className="text-sm font-medium">{expense.title}</p>
-                    <p className="text-xs text-neutral-400">{expense.date}</p>
-                  </div>
-                  <span className="text-sm font-semibold">
-                    {formatCurrency(expense.amount)}원
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </Card>
-      </section>
+      {/* Wedding Prep Guide */}
+      {isAuthenticated && (
+        <section className="mt-6 mb-4">
+          <WeddingPrepGuide
+            categoryExpenseMap={categories.reduce<Record<string, number>>((acc, cat) => {
+              acc[cat.name] = expenseByCategory[cat.id] ?? 0;
+              return acc;
+            }, {})}
+            dday={dday}
+          />
+        </section>
+      )}
 
       {/* About link */}
       <Link

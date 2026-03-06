@@ -21,7 +21,7 @@ interface OnboardingData {
 const BUDGET_RATIOS: Record<string, number> = {
   "웨딩홀": 0.30,
   "스튜디오": 0.12,
-  "드레스/턱시도": 0.10,
+  "드레스/정장": 0.10,
   "예물/예단": 0.15,
   "혼수": 0.15,
   "신혼여행": 0.10,

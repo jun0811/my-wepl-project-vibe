@@ -7,7 +7,7 @@ export const TRIAL_TOTAL_EXPENSE = 12_500_000;
 export const TRIAL_CATEGORIES: Category[] = [
   { id: "1", name: "웨딩홀", budget_amount: 12_000_000, icon: "building", sort_order: 0, is_default: true, couple_id: "", created_at: "" },
   { id: "2", name: "스튜디오", budget_amount: 3_500_000, icon: "camera", sort_order: 1, is_default: true, couple_id: "", created_at: "" },
-  { id: "3", name: "드레스/턱시도", budget_amount: 3_000_000, icon: "shirt", sort_order: 2, is_default: true, couple_id: "", created_at: "" },
+  { id: "3", name: "드레스/정장", budget_amount: 3_000_000, icon: "shirt", sort_order: 2, is_default: true, couple_id: "", created_at: "" },
   { id: "4", name: "예물/예단", budget_amount: 5_000_000, icon: "gem", sort_order: 3, is_default: true, couple_id: "", created_at: "" },
   { id: "5", name: "혼수", budget_amount: 6_000_000, icon: "sofa", sort_order: 4, is_default: true, couple_id: "", created_at: "" },
   { id: "6", name: "신혼여행", budget_amount: 2_000_000, icon: "plane", sort_order: 5, is_default: true, couple_id: "", created_at: "" },

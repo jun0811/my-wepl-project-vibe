@@ -94,13 +94,13 @@ export default function PartnerPage() {
       if (myOldCoupleId && myOldCoupleId !== targetCouple.id) {
         await supabase
           .from("expenses")
-          .update({ couple_id: targetCouple.id })
+          .update({ couple_id: targetCouple.id } as Record<string, unknown>)
           .eq("couple_id", myOldCoupleId)
           .eq("created_by", profile!.id);
 
         await supabase
           .from("schedules")
-          .update({ couple_id: targetCouple.id })
+          .update({ couple_id: targetCouple.id } as Record<string, unknown>)
           .eq("couple_id", myOldCoupleId);
 
         // Check if old couple has no other members

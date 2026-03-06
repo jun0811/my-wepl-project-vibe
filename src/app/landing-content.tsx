@@ -159,7 +159,7 @@ export function LandingContent() {
           {[
             { name: "웨딩홀", avg: "800만", range: "500~1,200만" },
             { name: "스튜디오", avg: "250만", range: "150~400만" },
-            { name: "드레스/턱시도", avg: "200만", range: "100~350만" },
+            { name: "드레스/정장", avg: "200만", range: "100~350만" },
           ].map((item) => (
             <div key={item.name} className="flex items-center justify-between rounded-xl bg-white px-4 py-3.5 shadow-sm ring-1 ring-neutral-100">
               <span className="text-sm font-medium text-neutral-800">{item.name}</span>

@@ -83,7 +83,7 @@ supabase/
 - `hide-scrollbar overflow-y-auto` on page containers
 
 ### Default Categories
-웨딩홀, 스튜디오, 드레스/턱시도, 예물/예단, 혼수, 신혼여행, 기타
+웨딩홀, 스튜디오, 드레스/정장, 예물/예단, 혼수, 신혼여행, 기타
 
 ### Regions
 서울, 경기/인천, 부산/경남, 대구/경북, 대전/충청, 광주/전라, 강원, 제주

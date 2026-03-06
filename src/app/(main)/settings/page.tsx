@@ -1,9 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { Card, Button } from "@/shared/ui";
 import { InstallBanner } from "@/shared/ui/install-banner";
 import { KakaoShareButton } from "@/shared/ui/kakao-share";
-import { useIsAuthenticated, useSignOut } from "@/features/auth";
+import { useIsAuthenticated, useSignOut, useUpdateNickname } from "@/features/auth";
 import Link from "next/link";
 
 const MENU_ITEMS = [
@@ -18,6 +19,9 @@ const MENU_ITEMS = [
 export default function SettingsPage() {
   const { isAuthenticated, isLoading, profile } = useIsAuthenticated();
   const { mutate: signOut, isPending: isSigningOut } = useSignOut();
+  const { mutate: updateNickname, isPending: isUpdatingNickname } = useUpdateNickname();
+  const [isEditingNickname, setIsEditingNickname] = useState(false);
+  const [nicknameInput, setNicknameInput] = useState("");
 
   if (isLoading) {
     return (
@@ -48,9 +52,56 @@ export default function SettingsPage() {
                 </span>
               )}
             </div>
-            <div>
-              <p className="font-semibold">{profile?.nickname ?? "웨플 사용자"}</p>
-              <p className="text-sm text-neutral-500">
+            <div className="flex-1">
+              {isEditingNickname ? (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const trimmed = nicknameInput.trim();
+                    if (!trimmed) return;
+                    updateNickname(trimmed, {
+                      onSuccess: () => setIsEditingNickname(false),
+                    });
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <input
+                    autoFocus
+                    value={nicknameInput}
+                    onChange={(e) => setNicknameInput(e.target.value)}
+                    maxLength={20}
+                    className="w-full rounded-lg border border-neutral-200 px-2.5 py-1.5 text-sm outline-none focus:border-primary-500"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isUpdatingNickname || !nicknameInput.trim()}
+                    className="shrink-0 text-sm font-medium text-primary-500 disabled:opacity-50"
+                  >
+                    저장
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingNickname(false)}
+                    className="shrink-0 text-sm text-neutral-400"
+                  >
+                    취소
+                  </button>
+                </form>
+              ) : (
+                <button
+                  onClick={() => {
+                    setNicknameInput(profile?.nickname ?? "");
+                    setIsEditingNickname(true);
+                  }}
+                  className="flex items-center gap-1.5"
+                >
+                  <span className="font-semibold">{profile?.nickname ?? "웨플 사용자"}</span>
+                  <svg className="h-3.5 w-3.5 text-neutral-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M17 3a2.83 2.83 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+                  </svg>
+                </button>
+              )}
+              <p className="mt-0.5 text-sm text-neutral-500">
                 {profile?.role === "bride" ? "신부" : profile?.role === "groom" ? "신랑" : ""}{" "}
                 {profile?.couples?.region ? `| ${profile.couples.region}` : ""}
               </p>

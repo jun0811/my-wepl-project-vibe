@@ -5,7 +5,7 @@ import { Card, Chip } from "@/shared/ui";
 import { formatCurrency } from "@/shared/lib/format";
 import { REGIONS, type Region } from "@/shared/types";
 import { useIsAuthenticated } from "@/features/auth";
-import { useCategories } from "@/features/expense";
+import { useCategories, useExpenses } from "@/features/expense";
 import { useCategoryAverages } from "@/features/explore";
 import { CostBarChart } from "@/features/explore/components/cost-bar-chart";
 import { PriceRangeCard } from "@/features/explore/components/price-range-card";
@@ -15,9 +15,42 @@ export default function ExplorePage() {
   const { isAuthenticated, profile } = useIsAuthenticated();
   const coupleId = profile?.couple_id ?? "";
   const { data: userCategories = [] } = useCategories(coupleId);
+  const { data: expenses = [] } = useExpenses(coupleId);
 
   const [selectedRegion, setSelectedRegion] = useState<Region | undefined>(undefined);
   const { data: stats = [], isLoading } = useCategoryAverages(selectedRegion);
+
+  // Map stat category names to user category names
+  const STAT_TO_USER: Record<string, string[]> = {
+    "웨딩홀": ["웨딩홀"],
+    "스드메": ["스튜디오", "드레스/정장"],
+    "예물": ["예물/예단"],
+    "예단": ["예물/예단"],
+    "허니문": ["신혼여행"],
+    "혼수": ["혼수"],
+    "기타": ["기타"],
+  };
+
+  // Build my expense totals by category name
+  const categoryMap = new Map(userCategories.map((c) => [c.id, c.name]));
+  const myExpensesByUserCat = expenses.reduce<Record<string, number>>((acc, e) => {
+    const name = categoryMap.get(e.category_id);
+    if (name) acc[name] = (acc[name] ?? 0) + e.amount;
+    return acc;
+  }, {});
+
+  // Map to stat category names
+  const myExpensesByCategory: Record<string, number> = {};
+  for (const [statName, userNames] of Object.entries(STAT_TO_USER)) {
+    const total = userNames.reduce((sum, n) => sum + (myExpensesByUserCat[n] ?? 0), 0);
+    if (total > 0) myExpensesByCategory[statName] = total;
+  }
+  // Also include exact matches for any custom categories
+  for (const [name, amount] of Object.entries(myExpensesByUserCat)) {
+    if (!myExpensesByCategory[name] && !Object.values(STAT_TO_USER).flat().includes(name)) {
+      myExpensesByCategory[name] = amount;
+    }
+  }
 
   const totalAverage = stats.length > 0
     ? stats.reduce((sum, s) => sum + s.avg_amount, 0)
@@ -40,7 +73,7 @@ export default function ExplorePage() {
 
       {/* Region filter */}
       <section className="mb-5">
-        <div className="hide-scrollbar flex gap-2 overflow-x-auto pb-1">
+        <div className="flex flex-wrap gap-2">
           <Chip
             label="전체"
             selected={!selectedRegion}
@@ -94,7 +127,7 @@ export default function ExplorePage() {
               카테고리별 비교
             </h3>
             <Card>
-              <CostBarChart data={stats} />
+              <CostBarChart data={stats} myExpenses={isAuthenticated ? myExpensesByCategory : undefined} />
             </Card>
           </section>
 

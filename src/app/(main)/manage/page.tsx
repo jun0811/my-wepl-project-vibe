@@ -8,6 +8,7 @@ import { FAB } from "@/shared/ui/fab";
 import { formatCurrency } from "@/shared/lib/format";
 import { useCategories, useExpenses, useCreateExpense } from "@/features/expense";
 import { ExpenseForm } from "@/features/expense/components/expense-form";
+import { QuickExpenseForm } from "@/features/expense/components/quick-expense-form";
 import { useIsAuthenticated } from "@/features/auth";
 import { exportExpensesToExcel } from "@/features/expense/lib/export-excel";
 
@@ -20,7 +21,8 @@ import {
 export default function ManagePage() {
   const { isAuthenticated, isLoading, profile } = useIsAuthenticated();
   const coupleId = profile?.couple_id ?? "";
-  const [showForm, setShowForm] = useState(false);
+  const [showQuickForm, setShowQuickForm] = useState(false);
+  const [showDetailForm, setShowDetailForm] = useState(false);
 
   const { data: categories } = useCategories(coupleId);
   const { data: allExpenses } = useExpenses(coupleId);
@@ -153,13 +155,45 @@ export default function ManagePage() {
       </section>
 
       {/* FAB */}
-      {!isTrial && <FAB onClick={() => setShowForm(true)} />}
+      {!isTrial && <FAB onClick={() => setShowQuickForm(true)} />}
 
-      {/* Add expense bottom sheet */}
+      {/* Quick expense bottom sheet */}
       {!isTrial && (
         <BottomSheet
-          isOpen={showForm}
-          onClose={() => setShowForm(false)}
+          isOpen={showQuickForm}
+          onClose={() => setShowQuickForm(false)}
+          title="빠른 지출 등록"
+        >
+          <QuickExpenseForm
+            categories={displayCategories}
+            onSubmit={(data) => {
+              if (!profile) return;
+              createMutation.mutate(
+                {
+                  ...data,
+                  couple_id: coupleId,
+                  created_by: profile.id,
+                },
+                {
+                  onSuccess: () => setShowQuickForm(false),
+                },
+              );
+            }}
+            onCancel={() => setShowQuickForm(false)}
+            onDetailMode={() => {
+              setShowQuickForm(false);
+              setShowDetailForm(true);
+            }}
+            isPending={createMutation.isPending}
+          />
+        </BottomSheet>
+      )}
+
+      {/* Detail expense bottom sheet */}
+      {!isTrial && (
+        <BottomSheet
+          isOpen={showDetailForm}
+          onClose={() => setShowDetailForm(false)}
           title="지출 추가"
         >
           <ExpenseForm
@@ -173,11 +207,11 @@ export default function ManagePage() {
                   created_by: profile.id,
                 },
                 {
-                  onSuccess: () => setShowForm(false),
+                  onSuccess: () => setShowDetailForm(false),
                 },
               );
             }}
-            onCancel={() => setShowForm(false)}
+            onCancel={() => setShowDetailForm(false)}
             isPending={createMutation.isPending}
           />
         </BottomSheet>

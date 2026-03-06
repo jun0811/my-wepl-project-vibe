@@ -17,7 +17,7 @@ export type {
 export const DEFAULT_CATEGORIES = [
   { name: "웨딩홀", icon: "building", sort_order: 0 },
   { name: "스튜디오", icon: "camera", sort_order: 1 },
-  { name: "드레스/턱시도", icon: "shirt", sort_order: 2 },
+  { name: "드레스/정장", icon: "shirt", sort_order: 2 },
   { name: "예물/예단", icon: "gem", sort_order: 3 },
   { name: "혼수", icon: "sofa", sort_order: 4 },
   { name: "신혼여행", icon: "plane", sort_order: 5 },
@@ -28,7 +28,7 @@ export const DEFAULT_CATEGORIES = [
 export const SUGGESTED_TAGS: Record<string, string[]> = {
   "웨딩홀": ["대관료", "식대", "폐백", "주차", "꽃장식"],
   "스튜디오": ["스냅", "DVD", "앨범", "원판", "보정"],
-  "드레스/턱시도": ["드레스", "턱시도", "속옷", "슈즈", "피팅"],
+  "드레스/정장": ["드레스", "정장", "속옷", "슈즈", "피팅"],
   "예물/예단": ["반지", "시계", "예단", "이바지", "함"],
   "혼수": ["가전", "가구", "침구", "주방", "생활용품"],
   "신혼여행": ["항공", "호텔", "액티비티", "보험", "비자"],

@@ -70,3 +70,16 @@ export async function getProfile(): Promise<ProfileWithCouple | null> {
 
   return { ...profile, couples: couple };
 }
+
+export async function updateNickname(nickname: string): Promise<void> {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ nickname })
+    .eq("id", user.id);
+
+  if (error) throw error;
+}
