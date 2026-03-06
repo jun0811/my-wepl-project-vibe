@@ -8,6 +8,7 @@ const MENU_ITEMS = [
   { label: "결혼 정보 수정", href: "/settings/wedding-info" },
   { label: "예산 설정", href: "/settings/budget" },
   { label: "파트너 초대", href: "/settings/partner" },
+  { label: "기능 소개", href: "/settings/about" },
   { label: "이용약관", href: "/settings/terms" },
   { label: "개인정보처리방침", href: "/settings/privacy" },
 ];

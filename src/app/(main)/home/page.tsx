@@ -89,7 +89,10 @@ export default function HomePage() {
       {/* Trial mode banner */}
       {isTrial && (
         <div className="mb-4 rounded-xl bg-secondary-50 px-4 py-3 text-center text-sm text-secondary-700">
-          체험 모드로 보고 있어요. 로그인하면 실제 데이터를 관리할 수 있어요.
+          <p>체험 모드로 보고 있어요. 로그인하면 실제 데이터를 관리할 수 있어요.</p>
+          <Link href="/settings/about" className="mt-1 inline-block text-xs font-medium text-secondary-600 underline underline-offset-2">
+            기능 소개 보기
+          </Link>
         </div>
       )}
 
@@ -274,6 +277,14 @@ export default function HomePage() {
           )}
         </Card>
       </section>
+
+      {/* About link */}
+      <Link
+        href="/settings/about"
+        className="mt-4 block text-center text-xs text-neutral-400 underline underline-offset-2"
+      >
+        Wepl 기능 소개
+      </Link>
     </div>
   );
 }

@@ -7,6 +7,10 @@ export const metadata: Metadata = {
   description:
     "결혼 준비 예산부터 지출 관리, 다른 커플의 평균 비용까지. 결혼 비용의 모든 것을 투명하게.",
   keywords: ["결혼 비용", "웨딩 예산", "결혼 준비", "스드메 가격", "웨딩홀 비용"],
+  icons: {
+    icon: "/icons/_icon_compressed_1772803748.png",
+    apple: "/icons/_icon_compressed_1772803748.png",
+  },
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
