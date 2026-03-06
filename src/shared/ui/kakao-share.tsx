@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useRef } from "react";
 
 declare global {
   interface Window {
@@ -15,25 +15,38 @@ declare global {
 }
 
 const KAKAO_JS_KEY = process.env.NEXT_PUBLIC_KAKAO_JS_KEY ?? "";
+const SDK_URL = "https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js";
+
+function initKakao() {
+  if (window.Kakao && !window.Kakao.isInitialized() && KAKAO_JS_KEY) {
+    window.Kakao.init(KAKAO_JS_KEY);
+  }
+}
 
 function useKakaoSDK() {
-  useEffect(() => {
-    if (!KAKAO_JS_KEY) return;
-    if (window.Kakao?.isInitialized()) return;
+  const loaded = useRef(false);
 
-    if (document.getElementById("kakao-sdk")) {
-      window.Kakao?.init(KAKAO_JS_KEY);
+  useEffect(() => {
+    if (!KAKAO_JS_KEY || loaded.current) return;
+    loaded.current = true;
+
+    // Already loaded
+    if (window.Kakao) {
+      initKakao();
+      return;
+    }
+
+    // Script tag already exists but not yet loaded
+    const existing = document.querySelector<HTMLScriptElement>(`script[src="${SDK_URL}"]`);
+    if (existing) {
+      existing.addEventListener("load", initKakao);
       return;
     }
 
     const script = document.createElement("script");
-    script.id = "kakao-sdk";
-    script.src = "https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js";
-    script.integrity = "sha384-DKYJZ8NLiK8MN4/C5P2dtSmLQ4KwPaoqAfyA/DfmEc1VDxu4lyyy8YLNU5JDSAH";
-    script.crossOrigin = "anonymous";
-    script.onload = () => {
-      window.Kakao?.init(KAKAO_JS_KEY);
-    };
+    script.src = SDK_URL;
+    script.async = true;
+    script.onload = initKakao;
     document.head.appendChild(script);
   }, []);
 }
@@ -54,8 +67,12 @@ export function useKakaoShare() {
       pageUrl?: string;
     } = {}) => {
       if (!window.Kakao?.isInitialized()) {
-        alert("카카오 공유 기능을 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
-        return;
+        // SDK not ready — try init once more
+        initKakao();
+        if (!window.Kakao?.isInitialized()) {
+          alert("카카오 공유 기능을 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
+          return;
+        }
       }
 
       const url = pageUrl ?? window.location.origin;
