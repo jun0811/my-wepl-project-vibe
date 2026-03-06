@@ -179,15 +179,17 @@ export default function HomePage() {
                 <div className="flex-1">
                   <div className="mb-1 flex items-center justify-between">
                     <span className="text-sm font-medium">{cat.name}</span>
-                    <span className="text-xs text-neutral-500">
-                      {formatCurrency(cat.expense)} / {formatCurrency(cat.budget)}원
+                    <span className="text-xs text-neutral-400">
+                      <span className="text-neutral-500">지출</span> {formatCurrency(cat.expense)}
+                      <span className="mx-0.5 text-neutral-300">/</span>
+                      <span className="text-neutral-500">예산</span> {formatCurrency(cat.budget)}원
                     </span>
                   </div>
                   <ProgressBar
                     current={cat.expense}
                     total={cat.budget}
                     size="sm"
-                    color={cat.expense > cat.budget ? "bg-error" : "bg-primary-400"}
+                    color="bg-primary-400"
                   />
                 </div>
                 <svg className="h-4 w-4 text-neutral-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -237,11 +239,11 @@ export default function HomePage() {
                     <p className="text-sm font-medium">{expense.title}</p>
                     <p className="text-xs text-neutral-400">{expense.date}</p>
                   </div>
-                  <div className="text-right">
+                  <div className="flex flex-col items-end">
                     <span className="text-sm font-semibold">
                       {formatCurrency(expense.amount)}원
                     </span>
-                    <span className="mt-0.5 block rounded bg-amber-50 px-1.5 py-0.5 text-xs text-amber-600">
+                    <span className="mt-0.5 inline-block rounded bg-amber-50 px-1.5 py-0.5 text-xs text-amber-600">
                       결제대기
                     </span>
                   </div>

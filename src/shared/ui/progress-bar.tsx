@@ -13,12 +13,12 @@ interface ProgressBarProps {
 export function ProgressBar({
   current,
   total,
-  color = "bg-primary-500",
+  color = "bg-primary-400",
   showLabel = false,
   showOverAmount = false,
   size = "md",
 }: ProgressBarProps) {
-  const isOver = current > total;
+  const isOver = current > total && total > 0;
   const hasExpenseWithoutBudget = total === 0 && current > 0;
   const percentage = total === 0
     ? (current > 0 ? 100 : 0)
@@ -37,21 +37,19 @@ export function ProgressBar({
           className={cn(
             "rounded-full transition-all duration-500 ease-out",
             heights[size],
-            isOver || hasExpenseWithoutBudget ? "bg-error" : color,
+            color,
           )}
           style={{ width: `${Math.min(percentage, 100)}%` }}
         />
       </div>
       {showLabel && (
         <div className="mt-1 flex justify-between text-xs text-neutral-500">
-          <span className={cn((isOver || hasExpenseWithoutBudget) && "text-error font-medium")}>
-            {Math.round(percentage)}%
-          </span>
+          <span>{Math.round(percentage)}%</span>
         </div>
       )}
       {showOverAmount && (isOver || hasExpenseWithoutBudget) && (
-        <p className="mt-1 text-xs font-medium text-error">
-          {formatCurrency(current - total)}원 초과
+        <p className="mt-1 text-xs font-medium text-primary-700">
+          {hasExpenseWithoutBudget ? "예산 미설정" : `${formatCurrency(current - total)}원 초과`}
         </p>
       )}
     </div>

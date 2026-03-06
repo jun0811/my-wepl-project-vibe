@@ -70,9 +70,19 @@ export default function BudgetSettingsPage() {
       {/* Total budget */}
       <Card className="mb-5 space-y-4">
         <h3 className="text-sm font-semibold text-neutral-700">총 예산</h3>
-        <div className="rounded-xl bg-neutral-50 p-4 text-center">
-          <span className="text-2xl font-bold text-primary-600">
-            {formatCurrencyWithUnit(totalBudget)}
+        <div className="relative">
+          <input
+            type="text"
+            inputMode="numeric"
+            value={formatCurrency(totalBudget)}
+            onChange={(e) => {
+              const raw = Number(e.target.value.replace(/[^0-9]/g, "")) || 0;
+              setTotalBudget(Math.min(raw, 500000000));
+            }}
+            className="h-14 w-full rounded-xl border border-neutral-300 pr-10 pl-4 text-center text-2xl font-bold text-primary-600 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
+          />
+          <span className="absolute top-1/2 right-4 -translate-y-1/2 text-sm text-neutral-400">
+            원
           </span>
         </div>
         <input
@@ -80,7 +90,7 @@ export default function BudgetSettingsPage() {
           min={10000000}
           max={100000000}
           step={1000000}
-          value={totalBudget}
+          value={Math.min(totalBudget, 100000000)}
           onChange={(e) => setTotalBudget(Number(e.target.value))}
           className="w-full accent-primary-500"
         />
