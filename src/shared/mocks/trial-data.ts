@@ -35,7 +35,12 @@ export const TRIAL_CATEGORY_SUMMARY = TRIAL_CATEGORIES.map((c) => ({
   expense: TRIAL_EXPENSE_MAP[c.id] ?? 0,
 }));
 
-export const TRIAL_RECENT_EXPENSES = [
-  { title: "드레스 피팅 2차", amount: 150_000, date: "3.4 (화)" },
+export const TRIAL_PAID_EXPENSES = [
   { title: "웨딩홀 식대 계약금", amount: 3_000_000, date: "3.1 (토)" },
+  { title: "드레스 피팅 2차", amount: 150_000, date: "2.25 (화)" },
+];
+
+export const TRIAL_PENDING_EXPENSES = [
+  { title: "스튜디오 촬영 잔금", amount: 800_000, date: "3.15 (토)" },
+  { title: "예물 반지 잔금", amount: 550_000, date: "3.20 (목)" },
 ];

@@ -12,7 +12,8 @@ import {
   TRIAL_TOTAL_BUDGET,
   TRIAL_TOTAL_EXPENSE,
   TRIAL_CATEGORY_SUMMARY,
-  TRIAL_RECENT_EXPENSES,
+  TRIAL_PAID_EXPENSES,
+  TRIAL_PENDING_EXPENSES,
 } from "@/shared/mocks/trial-data";
 
 export default function HomePage() {
@@ -65,13 +66,19 @@ export default function HomePage() {
         expense: expenseByCategory[cat.id] ?? 0,
       }));
 
-  const recentExpenses = isTrial
-    ? TRIAL_RECENT_EXPENSES
-    : expenses.slice(0, 5).map((e) => ({
-        title: e.title,
-        amount: e.amount,
-        date: e.date ?? "",
-      }));
+  const paidExpenses = isTrial
+    ? TRIAL_PAID_EXPENSES
+    : expenses
+        .filter((e) => e.is_paid)
+        .slice(0, 5)
+        .map((e) => ({ title: e.title, amount: e.amount, date: e.date ?? "" }));
+
+  const pendingExpenses = isTrial
+    ? TRIAL_PENDING_EXPENSES
+    : expenses
+        .filter((e) => !e.is_paid && e.amount > 0)
+        .slice(0, 5)
+        .map((e) => ({ title: e.title, amount: e.amount, date: e.date ?? "" }));
 
   return (
     <div className="hide-scrollbar overflow-y-auto px-5 pt-6 pb-4">
@@ -162,17 +169,55 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Recent Expenses */}
-      <section>
-        <h3 className="mb-3 text-sm font-semibold text-neutral-700">최근 지출</h3>
+      {/* Pending Expenses */}
+      <section className="mb-4">
+        <h3 className="mb-3 text-sm font-semibold text-neutral-700">
+          결제 대기
+          {pendingExpenses.length > 0 && (
+            <span className="ml-1.5 text-xs font-normal text-amber-500">
+              {pendingExpenses.length}건
+            </span>
+          )}
+        </h3>
         <Card>
-          {recentExpenses.length === 0 ? (
+          {pendingExpenses.length === 0 ? (
             <p className="py-4 text-center text-sm text-neutral-400">
-              아직 지출 내역이 없어요
+              대기 중인 결제가 없어요
             </p>
           ) : (
             <div className="divide-y divide-neutral-50">
-              {recentExpenses.map((expense, i) => (
+              {pendingExpenses.map((expense, i) => (
+                <div key={i} className="flex items-center justify-between py-2.5">
+                  <div>
+                    <p className="text-sm font-medium">{expense.title}</p>
+                    <p className="text-xs text-neutral-400">{expense.date}</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-sm font-semibold">
+                      {formatCurrency(expense.amount)}원
+                    </span>
+                    <span className="mt-0.5 block rounded bg-amber-50 px-1.5 py-0.5 text-xs text-amber-600">
+                      결제대기
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+      </section>
+
+      {/* Recent Paid Expenses */}
+      <section>
+        <h3 className="mb-3 text-sm font-semibold text-neutral-700">최근 지출</h3>
+        <Card>
+          {paidExpenses.length === 0 ? (
+            <p className="py-4 text-center text-sm text-neutral-400">
+              아직 결제 완료된 내역이 없어요
+            </p>
+          ) : (
+            <div className="divide-y divide-neutral-50">
+              {paidExpenses.map((expense, i) => (
                 <div key={i} className="flex items-center justify-between py-2.5">
                   <div>
                     <p className="text-sm font-medium">{expense.title}</p>
