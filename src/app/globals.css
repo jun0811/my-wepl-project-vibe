@@ -60,8 +60,6 @@ html {
 }
 
 body {
-  -webkit-user-select: none;
-  user-select: none;
   -webkit-tap-highlight-color: transparent;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -70,11 +68,10 @@ body {
   color: var(--color-neutral-900);
 }
 
-input,
-textarea,
-[contenteditable] {
-  -webkit-user-select: auto;
-  user-select: auto;
+button,
+a {
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 /* Safe area for PWA */
