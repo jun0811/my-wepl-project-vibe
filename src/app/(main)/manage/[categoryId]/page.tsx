@@ -51,13 +51,13 @@ export default function CategoryDetailPage({
           <span className="text-neutral-500">예산</span>
           <span className="font-semibold">{formatCurrency(category.budget_amount)}원</span>
         </div>
-        <ProgressBar current={totalExpense} total={category.budget_amount} size="md" />
+        <ProgressBar current={totalExpense} total={category.budget_amount} size="md" showOverAmount />
         <div className="mt-2 flex justify-between text-xs text-neutral-400">
           <span>지출 {formatCurrency(totalExpense)}원</span>
-          <span>
+          <span className={totalExpense > category.budget_amount ? "text-error font-medium" : ""}>
             {category.budget_amount > 0
               ? `${Math.round((totalExpense / category.budget_amount) * 100)}%`
-              : "-"}
+              : totalExpense > 0 ? "예산 미설정" : "-"}
           </span>
         </div>
       </Card>

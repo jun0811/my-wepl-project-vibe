@@ -1,10 +1,12 @@
 import { cn } from "@/shared/lib/cn";
+import { formatCurrency } from "@/shared/lib/format";
 
 interface ProgressBarProps {
   current: number;
   total: number;
   color?: string;
   showLabel?: boolean;
+  showOverAmount?: boolean;
   size?: "sm" | "md" | "lg";
 }
 
@@ -13,10 +15,14 @@ export function ProgressBar({
   total,
   color = "bg-primary-500",
   showLabel = false,
+  showOverAmount = false,
   size = "md",
 }: ProgressBarProps) {
-  const percentage = total === 0 ? 0 : Math.min((current / total) * 100, 100);
-  const isOver = current > total && total > 0;
+  const isOver = current > total;
+  const hasExpenseWithoutBudget = total === 0 && current > 0;
+  const percentage = total === 0
+    ? (current > 0 ? 100 : 0)
+    : Math.min((current / total) * 100, 100);
 
   const heights = {
     sm: "h-1.5",
@@ -31,17 +37,22 @@ export function ProgressBar({
           className={cn(
             "rounded-full transition-all duration-500 ease-out",
             heights[size],
-            isOver ? "bg-error" : color,
+            isOver || hasExpenseWithoutBudget ? "bg-error" : color,
           )}
           style={{ width: `${Math.min(percentage, 100)}%` }}
         />
       </div>
       {showLabel && (
         <div className="mt-1 flex justify-between text-xs text-neutral-500">
-          <span className={cn(isOver && "text-error font-medium")}>
+          <span className={cn((isOver || hasExpenseWithoutBudget) && "text-error font-medium")}>
             {Math.round(percentage)}%
           </span>
         </div>
+      )}
+      {showOverAmount && (isOver || hasExpenseWithoutBudget) && (
+        <p className="mt-1 text-xs font-medium text-error">
+          {formatCurrency(current - total)}원 초과
+        </p>
       )}
     </div>
   );

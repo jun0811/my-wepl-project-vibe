@@ -114,19 +114,32 @@ export default function HomePage() {
             <h2 className="text-base font-semibold text-neutral-900">
               예산 대비 지출
             </h2>
-            <span className="text-2xl font-bold text-primary-500">{percentage}%</span>
+            <span className={`text-2xl font-bold ${remaining < 0 ? "text-error" : "text-primary-500"}`}>
+              {percentage}%
+            </span>
           </div>
-          <ProgressBar current={totalExpense} total={totalBudget} size="lg" />
+          <ProgressBar current={totalExpense} total={totalBudget} size="lg" showOverAmount />
           <div className="mt-3 flex justify-between text-sm">
             <div>
               <span className="text-neutral-500">지출 </span>
               <span className="font-semibold">{formatCurrency(totalExpense)}원</span>
             </div>
             <div>
-              <span className="text-neutral-500">남은 예산 </span>
-              <span className="font-semibold text-secondary-600">
-                {formatCurrency(remaining)}원
-              </span>
+              {remaining >= 0 ? (
+                <>
+                  <span className="text-neutral-500">남은 예산 </span>
+                  <span className="font-semibold text-secondary-600">
+                    {formatCurrency(remaining)}원
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="text-neutral-500">초과 </span>
+                  <span className="font-semibold text-error">
+                    {formatCurrency(Math.abs(remaining))}원
+                  </span>
+                </>
+              )}
             </div>
           </div>
         </Card>

@@ -104,12 +104,13 @@ export default function ManagePage() {
                       current={expense}
                       total={cat.budget_amount}
                       size="sm"
+                      showOverAmount
                     />
                     <div className="mt-1 flex justify-between text-xs text-neutral-400">
                       <span>
                         {formatCurrency(expense)} / {formatCurrency(cat.budget_amount)}원
                       </span>
-                      <span>{pct}%</span>
+                      <span className={pct > 100 ? "text-error font-medium" : ""}>{pct}%</span>
                     </div>
                   </div>
                   <svg
