@@ -13,8 +13,16 @@ const MENU_ITEMS = [
 ];
 
 export default function SettingsPage() {
-  const { isAuthenticated, profile } = useIsAuthenticated();
+  const { isAuthenticated, isLoading, profile } = useIsAuthenticated();
   const { mutate: signOut, isPending: isSigningOut } = useSignOut();
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[60dvh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-200 border-t-primary-400" />
+      </div>
+    );
+  }
 
   return (
     <div className="hide-scrollbar overflow-y-auto px-5 pt-6 pb-4">

@@ -13,7 +13,7 @@ interface ExpenseFormData {
   date: string;
   vendorName: string;
   isPaid: boolean;
-  priceFelling: "cheap" | "fair" | "expensive" | "";
+  priceFeeling: "cheap" | "fair" | "expensive" | "";
 }
 
 interface ExpenseFormProps {
@@ -51,7 +51,7 @@ export function ExpenseForm({
         date: defaultValues?.date ?? new Date().toISOString().split("T")[0],
         vendorName: defaultValues?.vendorName ?? "",
         isPaid: defaultValues?.isPaid ?? false,
-        priceFelling: defaultValues?.priceFelling ?? "",
+        priceFeeling: defaultValues?.priceFeeling ?? "",
         tags: defaultValues?.tags ?? [],
       },
     });
@@ -80,7 +80,7 @@ export function ExpenseForm({
       date: data.date || null,
       vendor_name: data.vendorName || null,
       is_paid: data.isPaid,
-      price_feeling: data.priceFelling || null,
+      price_feeling: data.priceFeeling || null,
       tags: data.tags ?? [],
     });
   };
@@ -203,12 +203,12 @@ export function ExpenseForm({
               type="button"
               onClick={() =>
                 setValue(
-                  "priceFelling",
-                  watch("priceFelling") === option.value ? "" : option.value,
+                  "priceFeeling",
+                  watch("priceFeeling") === option.value ? "" : option.value,
                 )
               }
               className={`flex-1 rounded-xl border px-3 py-2 text-sm font-medium transition-all ${
-                watch("priceFelling") === option.value
+                watch("priceFeeling") === option.value
                   ? "border-primary-500 bg-primary-50 text-primary-600"
                   : "border-neutral-200 text-neutral-600"
               }`}

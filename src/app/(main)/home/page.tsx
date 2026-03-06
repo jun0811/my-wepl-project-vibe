@@ -1,50 +1,47 @@
 "use client";
 
+import Link from "next/link";
 import { Card } from "@/shared/ui";
 import { ProgressBar } from "@/shared/ui/progress-bar";
 import { formatCurrency, formatDday, calculateDday } from "@/shared/lib/format";
 import { useIsAuthenticated } from "@/features/auth";
 import { useCategories, useExpenses } from "@/features/expense";
 
-// Mock data for trial mode
-const MOCK_DATA = {
-  weddingDate: "2026-10-10",
-  totalBudget: 32000000,
-  totalExpense: 12500000,
-  categories: [
-    { name: "웨딩홀", budget: 12000000, expense: 8000000 },
-    { name: "스튜디오", budget: 3500000, expense: 1200000 },
-    { name: "드레스/턱시도", budget: 3000000, expense: 2500000 },
-    { name: "예물/예단", budget: 5000000, expense: 550000 },
-    { name: "혼수", budget: 6000000, expense: 0 },
-    { name: "신혼여행", budget: 2000000, expense: 0 },
-    { name: "기타", budget: 500000, expense: 250000 },
-  ],
-  recentExpenses: [
-    { title: "드레스 피팅 2차", amount: 150000, date: "3.4 (화)" },
-    { title: "웨딩홀 식대 계약금", amount: 3000000, date: "3.1 (토)" },
-  ],
-};
+import {
+  TRIAL_WEDDING_DATE,
+  TRIAL_TOTAL_BUDGET,
+  TRIAL_TOTAL_EXPENSE,
+  TRIAL_CATEGORY_SUMMARY,
+  TRIAL_RECENT_EXPENSES,
+} from "@/shared/mocks/trial-data";
 
 export default function HomePage() {
-  const { isAuthenticated, profile } = useIsAuthenticated();
+  const { isAuthenticated, isLoading, profile } = useIsAuthenticated();
   const couple = profile?.couples ?? null;
   const coupleId = profile?.couple_id ?? "";
 
   const { data: categories = [] } = useCategories(coupleId);
   const { data: expenses = [] } = useExpenses(coupleId);
 
-  const isTrial = !isAuthenticated;
+  const isTrial = !isLoading && !isAuthenticated;
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[60dvh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-200 border-t-primary-400" />
+      </div>
+    );
+  }
 
   // Calculate real data or use mock
   const dday = isTrial
-    ? calculateDday(MOCK_DATA.weddingDate)
+    ? calculateDday(TRIAL_WEDDING_DATE)
     : couple?.wedding_date
       ? calculateDday(couple.wedding_date)
       : null;
 
   const totalBudget = isTrial
-    ? MOCK_DATA.totalBudget
+    ? TRIAL_TOTAL_BUDGET
     : (couple?.total_budget ?? 0);
 
   const expenseByCategory = expenses.reduce<Record<string, number>>((acc, exp) => {
@@ -53,22 +50,23 @@ export default function HomePage() {
   }, {});
 
   const totalExpense = isTrial
-    ? MOCK_DATA.totalExpense
+    ? TRIAL_TOTAL_EXPENSE
     : expenses.reduce((sum, e) => sum + e.amount, 0);
 
   const percentage = totalBudget > 0 ? Math.round((totalExpense / totalBudget) * 100) : 0;
   const remaining = totalBudget - totalExpense;
 
   const categoryData = isTrial
-    ? MOCK_DATA.categories
+    ? TRIAL_CATEGORY_SUMMARY
     : categories.map((cat) => ({
+        id: cat.id,
         name: cat.name,
         budget: cat.budget_amount,
         expense: expenseByCategory[cat.id] ?? 0,
       }));
 
   const recentExpenses = isTrial
-    ? MOCK_DATA.recentExpenses
+    ? TRIAL_RECENT_EXPENSES
     : expenses.slice(0, 5).map((e) => ({
         title: e.title,
         amount: e.amount,
@@ -103,52 +101,64 @@ export default function HomePage() {
       </section>
 
       {/* Budget Overview */}
-      <Card className="mb-4">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-base font-semibold text-neutral-900">
-            예산 대비 지출
-          </h2>
-          <span className="text-2xl font-bold text-primary-500">{percentage}%</span>
-        </div>
-        <ProgressBar current={totalExpense} total={totalBudget} size="lg" />
-        <div className="mt-3 flex justify-between text-sm">
-          <div>
-            <span className="text-neutral-500">지출 </span>
-            <span className="font-semibold">{formatCurrency(totalExpense)}원</span>
+      <Link href={isAuthenticated ? "/settings/budget" : "/login"}>
+        <Card className="mb-4 cursor-pointer transition-colors active:bg-neutral-50">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-base font-semibold text-neutral-900">
+              예산 대비 지출
+            </h2>
+            <span className="text-2xl font-bold text-primary-500">{percentage}%</span>
           </div>
-          <div>
-            <span className="text-neutral-500">남은 예산 </span>
-            <span className="font-semibold text-secondary-600">
-              {formatCurrency(remaining)}원
-            </span>
+          <ProgressBar current={totalExpense} total={totalBudget} size="lg" />
+          <div className="mt-3 flex justify-between text-sm">
+            <div>
+              <span className="text-neutral-500">지출 </span>
+              <span className="font-semibold">{formatCurrency(totalExpense)}원</span>
+            </div>
+            <div>
+              <span className="text-neutral-500">남은 예산 </span>
+              <span className="font-semibold text-secondary-600">
+                {formatCurrency(remaining)}원
+              </span>
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+      </Link>
 
       {/* Category Progress */}
       <section className="mb-4">
         <h3 className="mb-3 text-sm font-semibold text-neutral-700">
           카테고리별 현황
         </h3>
-        <div className="space-y-2.5">
-          {categoryData.map((cat) => (
-            <Card key={cat.name} padding="sm" className="flex items-center gap-3">
-              <div className="flex-1">
-                <div className="mb-1 flex items-center justify-between">
-                  <span className="text-sm font-medium">{cat.name}</span>
-                  <span className="text-xs text-neutral-500">
-                    {formatCurrency(cat.expense)} / {formatCurrency(cat.budget)}원
-                  </span>
+        <div className="flex flex-col gap-2.5">
+          {categoryData.map((cat) => {
+            const inner = (
+              <Card key={cat.id} padding="sm" className="flex cursor-pointer items-center gap-3 transition-colors active:bg-neutral-50">
+                <div className="flex-1">
+                  <div className="mb-1 flex items-center justify-between">
+                    <span className="text-sm font-medium">{cat.name}</span>
+                    <span className="text-xs text-neutral-500">
+                      {formatCurrency(cat.expense)} / {formatCurrency(cat.budget)}원
+                    </span>
+                  </div>
+                  <ProgressBar
+                    current={cat.expense}
+                    total={cat.budget}
+                    size="sm"
+                    color={cat.expense > cat.budget ? "bg-error" : "bg-primary-400"}
+                  />
                 </div>
-                <ProgressBar
-                  current={cat.expense}
-                  total={cat.budget}
-                  size="sm"
-                  color={cat.expense > cat.budget ? "bg-error" : "bg-primary-400"}
-                />
-              </div>
-            </Card>
-          ))}
+                <svg className="h-4 w-4 text-neutral-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </Card>
+            );
+            return isAuthenticated ? (
+              <Link key={cat.id} href={`/manage/${cat.id}`}>{inner}</Link>
+            ) : (
+              <div key={cat.id}>{inner}</div>
+            );
+          })}
         </div>
       </section>
 

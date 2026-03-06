@@ -10,33 +10,14 @@ import { useCategories, useExpenses, useCreateExpense } from "@/features/expense
 import { ExpenseForm } from "@/features/expense/components/expense-form";
 import { useIsAuthenticated } from "@/features/auth";
 
-// Mock data for trial mode
-const MOCK_CATEGORIES = [
-  { id: "1", name: "웨딩홀", budget_amount: 12000000, icon: "building", sort_order: 0, is_default: true, couple_id: "", created_at: "" },
-  { id: "2", name: "스튜디오", budget_amount: 3500000, icon: "camera", sort_order: 1, is_default: true, couple_id: "", created_at: "" },
-  { id: "3", name: "드레스/턱시도", budget_amount: 3000000, icon: "shirt", sort_order: 2, is_default: true, couple_id: "", created_at: "" },
-  { id: "4", name: "예물/예단", budget_amount: 5000000, icon: "gem", sort_order: 3, is_default: true, couple_id: "", created_at: "" },
-  { id: "5", name: "혼수", budget_amount: 6000000, icon: "sofa", sort_order: 4, is_default: true, couple_id: "", created_at: "" },
-  { id: "6", name: "신혼여행", budget_amount: 2000000, icon: "plane", sort_order: 5, is_default: true, couple_id: "", created_at: "" },
-  { id: "7", name: "기타", budget_amount: 500000, icon: "plus", sort_order: 6, is_default: true, couple_id: "", created_at: "" },
-];
-
-const MOCK_EXPENSE_MAP: Record<string, number> = {
-  "1": 8000000,
-  "2": 1200000,
-  "3": 2500000,
-  "4": 550000,
-  "5": 0,
-  "6": 0,
-  "7": 250000,
-};
-
-const MOCK_COUNT_MAP: Record<string, number> = {
-  "1": 3, "2": 2, "3": 4, "4": 1, "5": 0, "6": 0, "7": 2,
-};
+import {
+  TRIAL_CATEGORIES,
+  TRIAL_EXPENSE_MAP,
+  TRIAL_COUNT_MAP,
+} from "@/shared/mocks/trial-data";
 
 export default function ManagePage() {
-  const { isAuthenticated, profile } = useIsAuthenticated();
+  const { isAuthenticated, isLoading, profile } = useIsAuthenticated();
   const coupleId = profile?.couple_id ?? "";
   const [showForm, setShowForm] = useState(false);
 
@@ -44,8 +25,16 @@ export default function ManagePage() {
   const { data: allExpenses } = useExpenses(coupleId);
   const createMutation = useCreateExpense(coupleId);
 
-  const isTrial = !isAuthenticated;
-  const displayCategories = isTrial ? MOCK_CATEGORIES : (categories ?? []);
+  const isTrial = !isLoading && !isAuthenticated;
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[60dvh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-200 border-t-primary-400" />
+      </div>
+    );
+  }
+  const displayCategories = isTrial ? TRIAL_CATEGORIES : (categories ?? []);
 
   const expenseByCategory = (allExpenses ?? []).reduce<Record<string, { total: number; count: number }>>(
     (acc, exp) => {
@@ -58,10 +47,10 @@ export default function ManagePage() {
   );
 
   const getCategoryExpense = (catId: string) =>
-    isTrial ? (MOCK_EXPENSE_MAP[catId] ?? 0) : (expenseByCategory[catId]?.total ?? 0);
+    isTrial ? (TRIAL_EXPENSE_MAP[catId] ?? 0) : (expenseByCategory[catId]?.total ?? 0);
 
   const getCategoryCount = (catId: string) =>
-    isTrial ? (MOCK_COUNT_MAP[catId] ?? 0) : (expenseByCategory[catId]?.count ?? 0);
+    isTrial ? (TRIAL_COUNT_MAP[catId] ?? 0) : (expenseByCategory[catId]?.count ?? 0);
 
   const totalBudget = displayCategories.reduce((sum, c) => sum + c.budget_amount, 0);
   const totalExpense = displayCategories.reduce((sum, c) => sum + getCategoryExpense(c.id), 0);
@@ -90,7 +79,7 @@ export default function ManagePage() {
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold text-neutral-700">카테고리</h3>
         </div>
-        <div className="space-y-2.5">
+        <div className="space-y-3">
           {displayCategories.map((cat) => {
             const expense = getCategoryExpense(cat.id);
             const count = getCategoryCount(cat.id);
@@ -100,7 +89,7 @@ export default function ManagePage() {
                 : 0;
 
             const content = (
-              <Card key={cat.id} padding="sm" className="cursor-pointer active:bg-neutral-50">
+              <Card padding="md" className="cursor-pointer transition-colors active:bg-neutral-50">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="mb-1.5 flex items-center gap-2">
@@ -139,7 +128,7 @@ export default function ManagePage() {
             return isTrial ? (
               <div key={cat.id}>{content}</div>
             ) : (
-              <Link key={cat.id} href={`/manage/${cat.id}`}>
+              <Link key={cat.id} href={`/manage/${cat.id}`} className="block">
                 {content}
               </Link>
             );
