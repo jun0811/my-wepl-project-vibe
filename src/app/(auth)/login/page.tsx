@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/shared/ui";
+import { InstallBanner } from "@/shared/ui/install-banner";
 import { useSignIn } from "@/features/auth";
 import Link from "next/link";
 
@@ -40,6 +41,11 @@ export default function LoginPage() {
             체험 모드로 둘러보기
           </Button>
         </Link>
+      </div>
+
+      {/* Install Banner */}
+      <div className="mt-6 w-full max-w-xs">
+        <InstallBanner variant="card" />
       </div>
 
       {/* Footer */}

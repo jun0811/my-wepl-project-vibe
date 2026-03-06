@@ -97,3 +97,9 @@ a {
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* Remove focus outline on Recharts elements (PWA thick border fix) */
+.recharts-wrapper *:focus,
+.recharts-wrapper *:focus-visible {
+  outline: none !important;
+}

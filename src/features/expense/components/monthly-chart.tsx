@@ -81,7 +81,9 @@ export function MonthlyChart({ expenses }: MonthlyChartProps) {
             border: "none",
             boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
             fontSize: 12,
+            outline: "none",
           }}
+          wrapperStyle={{ outline: "none" }}
         />
         <Area
           type="monotone"
@@ -89,6 +91,7 @@ export function MonthlyChart({ expenses }: MonthlyChartProps) {
           stroke="var(--color-primary-400)"
           strokeWidth={2}
           fill="url(#colorAmount)"
+          activeDot={{ r: 5, stroke: "var(--color-primary-400)", strokeWidth: 2, fill: "#fff", style: { outline: "none" } }}
         />
       </AreaChart>
     </ResponsiveContainer>

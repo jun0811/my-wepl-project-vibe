@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, Button } from "@/shared/ui";
+import { InstallBanner } from "@/shared/ui/install-banner";
 import { useIsAuthenticated, useSignOut } from "@/features/auth";
 import Link from "next/link";
 
@@ -103,6 +104,11 @@ export default function SettingsPage() {
           )}
         </ul>
       </Card>
+
+      {/* Install App */}
+      <div className="mt-5">
+        <InstallBanner variant="card" />
+      </div>
 
       <p className="mt-6 text-center text-xs text-neutral-300">
         Wepl v0.1.0
