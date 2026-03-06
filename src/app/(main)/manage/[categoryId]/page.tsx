@@ -10,6 +10,7 @@ import { useExpenses, useCreateExpense, useUpdateExpense, useDeleteExpense, useC
 import { ExpenseForm } from "@/features/expense/components/expense-form";
 import { useIsAuthenticated } from "@/features/auth";
 import type { Expense } from "@/shared/types";
+import { exportExpensesToExcel } from "@/features/expense/lib/export-excel";
 
 export default function CategoryDetailPage({
   params,
@@ -43,7 +44,23 @@ export default function CategoryDetailPage({
 
   return (
     <div className="hide-scrollbar overflow-y-auto px-5 pt-6 pb-4">
-      <TopBar title={category.name} onBack={() => router.back()} />
+      <TopBar
+        title={category.name}
+        onBack={() => router.back()}
+        rightAction={
+          <button
+            onClick={() => {
+              exportExpensesToExcel({
+                expenses,
+                categories: categories.filter((c) => c.id === categoryId),
+              });
+            }}
+            className="text-xs font-medium text-primary-500"
+          >
+            엑셀
+          </button>
+        }
+      />
 
       {/* Budget overview */}
       <Card className="mb-5">

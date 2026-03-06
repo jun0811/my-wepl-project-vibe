@@ -9,6 +9,7 @@ import { formatCurrency } from "@/shared/lib/format";
 import { useCategories, useExpenses, useCreateExpense } from "@/features/expense";
 import { ExpenseForm } from "@/features/expense/components/expense-form";
 import { useIsAuthenticated } from "@/features/auth";
+import { exportExpensesToExcel } from "@/features/expense/lib/export-excel";
 
 import {
   TRIAL_CATEGORIES,
@@ -78,6 +79,18 @@ export default function ManagePage() {
       <section>
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold text-neutral-700">카테고리</h3>
+          {!isTrial && (
+            <button
+              onClick={() => {
+                if (allExpenses && categories) {
+                  exportExpensesToExcel({ expenses: allExpenses, categories });
+                }
+              }}
+              className="rounded-lg border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-600 transition-colors active:bg-neutral-50"
+            >
+              엑셀 추출
+            </button>
+          )}
         </div>
         <div className="space-y-3">
           {displayCategories.map((cat) => {
