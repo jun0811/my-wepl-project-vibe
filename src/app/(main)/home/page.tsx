@@ -1,11 +1,14 @@
-import { Card } from "@/shared/ui";
-import { ProgressBar } from "@/shared/ui";
-import { formatCurrency, formatDday } from "@/shared/lib/format";
+"use client";
 
-// TODO: Replace with real data from Supabase
+import { Card } from "@/shared/ui";
+import { ProgressBar } from "@/shared/ui/progress-bar";
+import { formatCurrency, formatDday, calculateDday } from "@/shared/lib/format";
+import { useIsAuthenticated } from "@/features/auth";
+import { useCategories, useExpenses } from "@/features/expense";
+
+// Mock data for trial mode
 const MOCK_DATA = {
   weddingDate: "2026-10-10",
-  dday: 218,
   totalBudget: 32000000,
   totalExpense: 12500000,
   categories: [
@@ -24,19 +27,78 @@ const MOCK_DATA = {
 };
 
 export default function HomePage() {
-  const { dday, totalBudget, totalExpense, categories, recentExpenses } = MOCK_DATA;
+  const { isAuthenticated, profile } = useIsAuthenticated();
+  const couple = profile?.couples ?? null;
+  const coupleId = profile?.couple_id ?? "";
+
+  const { data: categories = [] } = useCategories(coupleId);
+  const { data: expenses = [] } = useExpenses(coupleId);
+
+  const isTrial = !isAuthenticated || !coupleId;
+
+  // Calculate real data or use mock
+  const dday = isTrial
+    ? calculateDday(MOCK_DATA.weddingDate)
+    : couple?.wedding_date
+      ? calculateDday(couple.wedding_date)
+      : null;
+
+  const totalBudget = isTrial
+    ? MOCK_DATA.totalBudget
+    : (couple?.total_budget ?? 0);
+
+  const expenseByCategory = expenses.reduce<Record<string, number>>((acc, exp) => {
+    acc[exp.category_id] = (acc[exp.category_id] ?? 0) + exp.amount;
+    return acc;
+  }, {});
+
+  const totalExpense = isTrial
+    ? MOCK_DATA.totalExpense
+    : expenses.reduce((sum, e) => sum + e.amount, 0);
+
   const percentage = totalBudget > 0 ? Math.round((totalExpense / totalBudget) * 100) : 0;
   const remaining = totalBudget - totalExpense;
 
+  const categoryData = isTrial
+    ? MOCK_DATA.categories
+    : categories.map((cat) => ({
+        name: cat.name,
+        budget: cat.budget_amount,
+        expense: expenseByCategory[cat.id] ?? 0,
+      }));
+
+  const recentExpenses = isTrial
+    ? MOCK_DATA.recentExpenses
+    : expenses.slice(0, 5).map((e) => ({
+        title: e.title,
+        amount: e.amount,
+        date: e.date ?? "",
+      }));
+
   return (
     <div className="hide-scrollbar overflow-y-auto px-5 pt-6 pb-4">
+      {/* Trial mode banner */}
+      {isTrial && (
+        <div className="mb-4 rounded-xl bg-secondary-50 px-4 py-3 text-center text-sm text-secondary-700">
+          체험 모드로 보고 있어요. 로그인하면 실제 데이터를 관리할 수 있어요.
+        </div>
+      )}
+
       {/* D-day Header */}
       <section className="mb-6">
         <div className="flex items-baseline gap-3">
-          <span className="text-3xl font-bold text-primary-500">
-            {formatDday(dday)}
-          </span>
-          <span className="text-sm text-neutral-500">우리의 결혼식까지</span>
+          {dday !== null ? (
+            <>
+              <span className="text-3xl font-bold text-primary-500">
+                {formatDday(dday)}
+              </span>
+              <span className="text-sm text-neutral-500">우리의 결혼식까지</span>
+            </>
+          ) : (
+            <span className="text-lg font-semibold text-neutral-700">
+              결혼 준비를 시작해볼까요?
+            </span>
+          )}
         </div>
       </section>
 
@@ -69,7 +131,7 @@ export default function HomePage() {
           카테고리별 현황
         </h3>
         <div className="space-y-2.5">
-          {categories.map((cat) => (
+          {categoryData.map((cat) => (
             <Card key={cat.name} padding="sm" className="flex items-center gap-3">
               <div className="flex-1">
                 <div className="mb-1 flex items-center justify-between">
