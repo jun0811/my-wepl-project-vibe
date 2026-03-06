@@ -6,6 +6,9 @@ import { ProgressBar } from "@/shared/ui/progress-bar";
 import { formatCurrency, formatDday, calculateDday } from "@/shared/lib/format";
 import { useIsAuthenticated } from "@/features/auth";
 import { useCategories, useExpenses } from "@/features/expense";
+import { MonthlyChart } from "@/features/expense/components/monthly-chart";
+import { useSchedules } from "@/features/schedule";
+import { GuideChecklist } from "@/features/onboarding";
 
 import {
   TRIAL_WEDDING_DATE,
@@ -23,6 +26,7 @@ export default function HomePage() {
 
   const { data: categories = [] } = useCategories(coupleId);
   const { data: expenses = [] } = useExpenses(coupleId);
+  const { data: schedules = [] } = useSchedules(coupleId);
 
   const isTrial = !isLoading && !isAuthenticated;
 
@@ -107,6 +111,21 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Guide Checklist */}
+      {isAuthenticated && (
+        <section className="mb-4">
+          <GuideChecklist
+            items={[
+              { label: "총 예산 설정하기", completed: totalBudget > 0, href: "/settings/budget" },
+              { label: "카테고리 예산 배분하기", completed: categories.some((c) => c.budget_amount > 0), href: "/settings/budget" },
+              { label: "첫 지출 기록하기", completed: expenses.length > 0, href: "/manage" },
+              { label: "파트너 초대하기", completed: false, href: "/settings/partner" },
+              { label: "일정 등록하기", completed: schedules.length > 0, href: "/schedule" },
+            ]}
+          />
+        </section>
+      )}
+
       {/* Budget Overview */}
       <Link href={isAuthenticated ? "/settings/budget" : "/login"}>
         <Card className="mb-4 cursor-pointer transition-colors active:bg-neutral-50">
@@ -181,6 +200,16 @@ export default function HomePage() {
           })}
         </div>
       </section>
+
+      {/* Monthly Trend */}
+      {!isTrial && expenses.length > 0 && (
+        <section className="mb-4">
+          <h3 className="mb-3 text-sm font-semibold text-neutral-700">월별 지출 추이</h3>
+          <Card>
+            <MonthlyChart expenses={expenses} />
+          </Card>
+        </section>
+      )}
 
       {/* Pending Expenses */}
       <section className="mb-4">

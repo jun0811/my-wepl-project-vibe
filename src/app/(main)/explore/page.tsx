@@ -4,11 +4,18 @@ import { useState } from "react";
 import { Card, Chip } from "@/shared/ui";
 import { formatCurrency } from "@/shared/lib/format";
 import { REGIONS, type Region } from "@/shared/types";
+import { useIsAuthenticated } from "@/features/auth";
+import { useCategories } from "@/features/expense";
 import { useCategoryAverages } from "@/features/explore";
 import { CostBarChart } from "@/features/explore/components/cost-bar-chart";
 import { PriceRangeCard } from "@/features/explore/components/price-range-card";
+import { BudgetComparison } from "@/features/explore/components/budget-comparison";
 
 export default function ExplorePage() {
+  const { isAuthenticated, profile } = useIsAuthenticated();
+  const coupleId = profile?.couple_id ?? "";
+  const { data: userCategories = [] } = useCategories(coupleId);
+
   const [selectedRegion, setSelectedRegion] = useState<Region | undefined>(undefined);
   const { data: stats = [], isLoading } = useCategoryAverages(selectedRegion);
 
@@ -112,6 +119,21 @@ export default function ExplorePage() {
               지출을 기록하면 다른 커플과 비교할 수 있어요
             </p>
           </Card>
+
+          {/* Budget vs Average Comparison */}
+          {isAuthenticated && userCategories.length > 0 && stats.length > 0 && (
+            <section className="mt-5">
+              <h3 className="mb-3 text-sm font-semibold text-neutral-700">
+                내 예산 vs 평균
+              </h3>
+              <Card>
+                <BudgetComparison
+                  categories={userCategories.map((c) => ({ name: c.name, budget: c.budget_amount }))}
+                  averages={stats}
+                />
+              </Card>
+            </section>
+          )}
         </>
       )}
     </div>
