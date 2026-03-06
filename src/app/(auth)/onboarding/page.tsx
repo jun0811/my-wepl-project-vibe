@@ -57,7 +57,13 @@ export default function OnboardingPage() {
       case "region":
         return { value: data.region, onChange: (region: typeof data.region) => updateData({ region }) };
       case "budget":
-        return { value: data.totalBudget, recommendedBudget, onChange: (totalBudget: number) => updateData({ totalBudget }) };
+        return {
+          value: data.totalBudget,
+          recommendedBudget,
+          categoryBudgets: data.categoryBudgets,
+          onChange: (totalBudget: number) => updateData({ totalBudget }),
+          onCategoryBudgetChange: (categoryBudgets: Record<string, number>) => updateData({ categoryBudgets }),
+        };
       case "confirm":
         return { data };
     }

@@ -15,6 +15,26 @@ interface OnboardingData {
   weddingDate: string;
   region: Region | null;
   totalBudget: number;
+  categoryBudgets: Record<string, number>;
+}
+
+const BUDGET_RATIOS: Record<string, number> = {
+  "웨딩홀": 0.30,
+  "스튜디오": 0.12,
+  "드레스/턱시도": 0.10,
+  "예물/예단": 0.15,
+  "혼수": 0.15,
+  "신혼여행": 0.10,
+  "기타": 0.08,
+};
+
+function distributeBudget(totalBudget: number): Record<string, number> {
+  const result: Record<string, number> = {};
+  for (const cat of DEFAULT_CATEGORIES) {
+    const ratio = BUDGET_RATIOS[cat.name] ?? 0;
+    result[cat.name] = Math.round(totalBudget * ratio);
+  }
+  return result;
 }
 
 const REGIONAL_BUDGET_DEFAULTS: Record<string, number> = {
@@ -37,6 +57,7 @@ export function useOnboarding() {
     weddingDate: "",
     region: null,
     totalBudget: 30000000,
+    categoryBudgets: distributeBudget(30000000),
   });
 
   const stepIndex = STEPS.indexOf(currentStep);
@@ -45,9 +66,11 @@ export function useOnboarding() {
   const updateData = useCallback((partial: Partial<OnboardingData>) => {
     setData((prev) => {
       const next = { ...prev, ...partial };
-      // Auto-set budget recommendation when region changes
       if (partial.region && !prev.totalBudget) {
         next.totalBudget = REGIONAL_BUDGET_DEFAULTS[partial.region] ?? 30000000;
+      }
+      if (partial.totalBudget !== undefined && !partial.categoryBudgets) {
+        next.categoryBudgets = distributeBudget(next.totalBudget);
       }
       return next;
     });
@@ -58,9 +81,11 @@ export function useOnboarding() {
     if (nextIndex < STEPS.length) {
       // Auto-set recommended budget when entering budget step
       if (STEPS[nextIndex] === "budget" && data.region) {
+        const budget = REGIONAL_BUDGET_DEFAULTS[data.region!] ?? 30000000;
         setData((prev) => ({
           ...prev,
-          totalBudget: REGIONAL_BUDGET_DEFAULTS[data.region!] ?? 30000000,
+          totalBudget: budget,
+          categoryBudgets: distributeBudget(budget),
         }));
       }
       setCurrentStep(STEPS[nextIndex]);
@@ -109,7 +134,7 @@ export function useOnboarding() {
         icon: cat.icon,
         sort_order: cat.sort_order,
         is_default: true,
-        budget_amount: 0,
+        budget_amount: data.categoryBudgets[cat.name] ?? 0,
       }));
 
       const { error: catError } = await supabase

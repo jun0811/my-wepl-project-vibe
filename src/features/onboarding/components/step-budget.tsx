@@ -1,18 +1,40 @@
 "use client";
 
-import { formatCurrencyWithUnit } from "@/shared/lib/format";
+import { type ChangeEvent } from "react";
+import { DEFAULT_CATEGORIES } from "@/shared/types";
+import { formatCurrency, formatCurrencyWithUnit } from "@/shared/lib/format";
 
 interface StepBudgetProps {
   value: number;
   recommendedBudget: number | null;
+  categoryBudgets: Record<string, number>;
   onChange: (budget: number) => void;
+  onCategoryBudgetChange: (categoryBudgets: Record<string, number>) => void;
 }
 
 const BUDGET_PRESETS = [
   20000000, 25000000, 30000000, 35000000, 40000000, 50000000,
 ];
 
-export function StepBudget({ value, recommendedBudget, onChange }: StepBudgetProps) {
+export function StepBudget({
+  value,
+  recommendedBudget,
+  categoryBudgets,
+  onChange,
+  onCategoryBudgetChange,
+}: StepBudgetProps) {
+  const allocatedTotal = Object.values(categoryBudgets).reduce((s, v) => s + v, 0);
+  const remaining = value - allocatedTotal;
+
+  const handleCategoryChange = (name: string, amount: number) => {
+    onCategoryBudgetChange({ ...categoryBudgets, [name]: amount });
+  };
+
+  const handleAmountInput = (name: string, e: ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/[^0-9]/g, "");
+    handleCategoryChange(name, raw ? Number(raw) : 0);
+  };
+
   return (
     <div>
       <h2 className="mb-2 text-xl font-bold text-neutral-900">
@@ -24,14 +46,12 @@ export function StepBudget({ value, recommendedBudget, onChange }: StepBudgetPro
         </p>
       )}
 
-      {/* Current value display */}
       <div className="mb-6 rounded-xl bg-neutral-50 p-4 text-center">
         <span className="text-2xl font-bold text-primary-600">
           {formatCurrencyWithUnit(value)}
         </span>
       </div>
 
-      {/* Slider */}
       <input
         type="range"
         min={10000000}
@@ -46,8 +66,7 @@ export function StepBudget({ value, recommendedBudget, onChange }: StepBudgetPro
         <span>1억원</span>
       </div>
 
-      {/* Presets */}
-      <div className="grid grid-cols-3 gap-2">
+      <div className="mb-6 grid grid-cols-3 gap-2">
         {BUDGET_PRESETS.map((preset) => (
           <button
             key={preset}
@@ -62,6 +81,54 @@ export function StepBudget({ value, recommendedBudget, onChange }: StepBudgetPro
             {formatCurrencyWithUnit(preset)}
           </button>
         ))}
+      </div>
+
+      <div className="rounded-xl border border-neutral-200 p-4">
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-neutral-700">카테고리별 예산</h3>
+          <span
+            className={`text-xs font-medium ${
+              remaining === 0
+                ? "text-green-600"
+                : remaining > 0
+                  ? "text-amber-600"
+                  : "text-red-500"
+            }`}
+          >
+            {remaining === 0
+              ? "배분 완료"
+              : remaining > 0
+                ? `잔여 ${formatCurrencyWithUnit(remaining)}`
+                : `${formatCurrencyWithUnit(Math.abs(remaining))} 초과`}
+          </span>
+        </div>
+        <div className="space-y-3">
+          {DEFAULT_CATEGORIES.map((cat) => {
+            const amount = categoryBudgets[cat.name] ?? 0;
+            const percent = value > 0 ? Math.round((amount / value) * 100) : 0;
+            return (
+              <div key={cat.name} className="flex items-center gap-3">
+                <span className="w-24 shrink-0 text-sm text-neutral-700">{cat.name}</span>
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={amount > 0 ? formatCurrency(amount) : ""}
+                    onChange={(e) => handleAmountInput(cat.name, e)}
+                    placeholder="0"
+                    className="h-11 w-full rounded-xl border border-neutral-300 pr-10 pl-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
+                  />
+                  <span className="absolute top-1/2 right-3 -translate-y-1/2 text-sm text-neutral-400">
+                    원
+                  </span>
+                </div>
+                <span className="w-10 shrink-0 text-right text-xs text-neutral-400">
+                  {percent}%
+                </span>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
