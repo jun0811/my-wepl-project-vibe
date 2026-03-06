@@ -83,7 +83,7 @@ export default function ManagePage() {
             <button
               onClick={() => {
                 if (allExpenses && categories) {
-                  exportExpensesToExcel({ expenses: allExpenses, categories });
+                  exportExpensesToExcel({ expenses: allExpenses, categories, couple: profile?.couples });
                 }
               }}
               className="rounded-lg border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-600 transition-colors active:bg-neutral-50"
@@ -121,9 +121,11 @@ export default function ManagePage() {
                     />
                     <div className="mt-1 flex justify-between text-xs text-neutral-400">
                       <span>
-                        {formatCurrency(expense)} / {formatCurrency(cat.budget_amount)}원
+                        <span className="text-neutral-500">지출</span> {formatCurrency(expense)}
+                        <span className="mx-1 text-neutral-300">/</span>
+                        <span className="text-neutral-500">예산</span> {formatCurrency(cat.budget_amount)}원
                       </span>
-                      <span className={pct > 100 ? "text-error font-medium" : ""}>{pct}%</span>
+                      <span className={pct > 100 ? "text-primary-700 font-medium" : ""}>{pct}%</span>
                     </div>
                   </div>
                   <svg

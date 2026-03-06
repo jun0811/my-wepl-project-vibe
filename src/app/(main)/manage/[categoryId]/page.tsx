@@ -53,6 +53,7 @@ export default function CategoryDetailPage({
               exportExpensesToExcel({
                 expenses,
                 categories: categories.filter((c) => c.id === categoryId),
+                couple: profile?.couples,
               });
             }}
             className="text-xs font-medium text-primary-500"
