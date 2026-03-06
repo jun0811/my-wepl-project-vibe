@@ -35,11 +35,23 @@ export async function getProfile(): Promise<ProfileWithCouple | null> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data } = await supabase
+  const { data: profile } = await supabase
     .from("profiles")
-    .select("*, couples(*)")
+    .select()
     .eq("id", user.id)
-    .single<ProfileWithCouple>();
+    .single<Profile>();
 
-  return data;
+  if (!profile) return null;
+
+  let couple: Couple | null = null;
+  if (profile.couple_id) {
+    const { data } = await supabase
+      .from("couples")
+      .select()
+      .eq("id", profile.couple_id)
+      .single<Couple>();
+    couple = data;
+  }
+
+  return { ...profile, couples: couple };
 }
