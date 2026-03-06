@@ -1,0 +1,26 @@
+{
+  "name": "웨플 - 결혼 비용, 한눈에",
+  "short_name": "웨플",
+  "description": "결혼 준비 예산부터 지출 관리, 다른 커플의 평균 비용까지",
+  "start_url": "/home",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#E8758A",
+  "orientation": "portrait",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["lifestyle", "finance"]
+}
