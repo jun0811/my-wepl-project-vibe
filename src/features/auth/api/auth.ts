@@ -35,11 +35,26 @@ export async function getProfile(): Promise<ProfileWithCouple | null> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data: profile } = await supabase
+  let { data: profile } = await supabase
     .from("profiles")
     .select()
     .eq("id", user.id)
-    .single<Profile>();
+    .maybeSingle<Profile>();
+
+  // Auto-create profile if trigger didn't fire
+  if (!profile) {
+    const meta = user.user_metadata ?? {};
+    const { data: created } = await supabase
+      .from("profiles")
+      .upsert({
+        id: user.id,
+        nickname: meta.name ?? meta.full_name ?? null,
+        avatar_url: meta.avatar_url ?? null,
+      })
+      .select()
+      .single<Profile>();
+    profile = created;
+  }
 
   if (!profile) return null;
 
