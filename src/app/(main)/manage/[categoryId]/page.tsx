@@ -124,7 +124,7 @@ export default function CategoryDetailPage({
                       ))}
                     </div>
                   </div>
-                  <div className="ml-3 text-right">
+                  <div className="ml-3 flex items-center gap-2">
                     <span className="text-sm font-semibold">
                       {formatCurrency(expense.amount)}원
                     </span>
@@ -135,7 +135,7 @@ export default function CategoryDetailPage({
                           deleteMutation.mutate(expense.id);
                         }
                       }}
-                      className="mt-1 block text-xs text-neutral-400 hover:text-error"
+                      className="text-xs text-neutral-400 hover:text-error"
                     >
                       삭제
                     </button>
