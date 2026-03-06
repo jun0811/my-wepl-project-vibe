@@ -1,20 +1,37 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/shared/lib/supabase";
 import { signInWithKakao, signOut, getProfile } from "../api/auth";
 
 const AUTH_KEYS = {
   profile: ["auth", "profile"] as const,
 };
 
+function useSessionReady() {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getSession().then(() => setReady(true));
+  }, []);
+  return ready;
+}
+
 export function useProfile() {
-  return useQuery({
+  const sessionReady = useSessionReady();
+  const query = useQuery({
     queryKey: AUTH_KEYS.profile,
     queryFn: getProfile,
     staleTime: 5 * 60 * 1000,
     retry: false,
+    enabled: sessionReady,
   });
+  return {
+    ...query,
+    isLoading: !sessionReady || query.isLoading,
+  };
 }
 
 export function useSignIn() {
