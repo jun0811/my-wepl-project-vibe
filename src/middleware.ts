@@ -10,8 +10,8 @@ const TRIAL_ROUTES = ["/home", "/explore"];
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Skip public routes
-  if (PUBLIC_ROUTES.some((route) => pathname.startsWith(route))) {
+  // Skip public routes and landing page
+  if (pathname === "/" || PUBLIC_ROUTES.some((route) => pathname.startsWith(route))) {
     return NextResponse.next();
   }
 
