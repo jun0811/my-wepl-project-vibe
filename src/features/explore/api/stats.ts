@@ -27,13 +27,13 @@ export async function getCategoryAverages(region?: string): Promise<CategoryAver
   const { data, error } = await query;
   if (error) throw error;
 
-  // Aggregate in client (since we can't use the view directly via Supabase client)
+  // Aggregate by category_name (merge all regions when no filter)
   const groups = (data ?? []).reduce<
     Record<string, { amounts: number[]; region: string | null }>
   >((acc, row) => {
-    const key = `${row.region}__${row.category_name}`;
+    const key = region ? `${row.region}__${row.category_name}` : row.category_name;
     if (!acc[key]) {
-      acc[key] = { amounts: [], region: row.region };
+      acc[key] = { amounts: [], region: region ? row.region : null };
     }
     acc[key].amounts.push(row.amount);
     return acc;
@@ -48,7 +48,7 @@ export async function getCategoryAverages(region?: string): Promise<CategoryAver
 
       return {
         region: group.region,
-        category_name: key.split("__")[1],
+        category_name: region ? key.split("__")[1] : key,
         data_count: len,
         avg_amount: Math.round(sorted.reduce((s, v) => s + v, 0) / len),
         median_amount: percentile(0.5),
