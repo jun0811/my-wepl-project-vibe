@@ -1,4 +1,5 @@
 export { useOnboarding } from "./hooks/useOnboarding";
+export { GuideChecklist } from "./components/guide-checklist";
 export { StepRole } from "./components/step-role";
 export { StepWeddingDate } from "./components/step-wedding-date";
 export { StepRegion } from "./components/step-region";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BottomSheet } from "@/shared/ui";
+import { BottomSheet, Card } from "@/shared/ui";
 import { FAB } from "@/shared/ui/fab";
 import { useIsAuthenticated } from "@/features/auth";
 import {
@@ -11,12 +11,14 @@ import {
   useToggleSchedule,
   ScheduleForm,
   ScheduleList,
+  ScheduleCalendar,
 } from "@/features/schedule";
 
 export default function SchedulePage() {
   const { isLoading, profile } = useIsAuthenticated();
   const coupleId = profile?.couple_id ?? "";
   const [showForm, setShowForm] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const { data: schedules } = useSchedules(coupleId);
   const createMutation = useCreateSchedule(coupleId);
@@ -32,6 +34,9 @@ export default function SchedulePage() {
   }
 
   const displaySchedules = schedules ?? [];
+  const filteredSchedules = selectedDate
+    ? displaySchedules.filter((s) => s.date === selectedDate)
+    : displaySchedules;
 
   return (
     <div className="hide-scrollbar overflow-y-auto px-5 pt-6 pb-4">
@@ -46,8 +51,27 @@ export default function SchedulePage() {
         </h1>
       </section>
 
+      <Card className="mb-4">
+        <ScheduleCalendar
+          schedules={displaySchedules}
+          selectedDate={selectedDate}
+          onSelectDate={(date) =>
+            setSelectedDate(date === selectedDate ? null : date)
+          }
+        />
+      </Card>
+
+      {selectedDate && (
+        <button
+          onClick={() => setSelectedDate(null)}
+          className="mb-3 text-xs text-primary-500"
+        >
+          전체 일정 보기
+        </button>
+      )}
+
       <ScheduleList
-        schedules={displaySchedules}
+        schedules={filteredSchedules}
         onToggle={(id, isCompleted) =>
           toggleMutation.mutate({ id, isCompleted })
         }
