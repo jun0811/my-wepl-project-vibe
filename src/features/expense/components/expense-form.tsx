@@ -2,6 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { Button, Chip } from "@/shared/ui";
+import { formatCurrency } from "@/shared/lib/format";
 import { SUGGESTED_TAGS } from "@/shared/types";
 import type { Category } from "@/shared/types";
 
@@ -126,15 +127,20 @@ export function ExpenseForm({
         </label>
         <div className="relative">
           <input
-            {...register("amount", {
-              required: "금액을 입력해주세요",
-              min: { value: 1, message: "1원 이상 입력해주세요" },
-            })}
-            type="number"
+            type="text"
             inputMode="numeric"
             placeholder="0"
+            value={watch("amount") ? formatCurrency(Number(watch("amount"))) : ""}
+            onChange={(e) => {
+              const raw = e.target.value.replace(/[^0-9]/g, "");
+              setValue("amount", raw, { shouldValidate: true });
+            }}
             className="h-11 w-full rounded-xl border border-neutral-300 pr-8 pl-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
           />
+          <input type="hidden" {...register("amount", {
+            required: "금액을 입력해주세요",
+            validate: (v) => Number(v) >= 1 || "1원 이상 입력해주세요",
+          })} />
           <span className="absolute top-1/2 right-3 -translate-y-1/2 text-sm text-neutral-400">
             원
           </span>
