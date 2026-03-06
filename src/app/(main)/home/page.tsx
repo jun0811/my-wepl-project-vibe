@@ -34,7 +34,7 @@ export default function HomePage() {
   const { data: categories = [] } = useCategories(coupleId);
   const { data: expenses = [] } = useExpenses(coupleId);
 
-  const isTrial = !isAuthenticated || !coupleId;
+  const isTrial = !isAuthenticated;
 
   // Calculate real data or use mock
   const dday = isTrial

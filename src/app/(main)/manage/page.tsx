@@ -44,7 +44,7 @@ export default function ManagePage() {
   const { data: allExpenses } = useExpenses(coupleId);
   const createMutation = useCreateExpense(coupleId);
 
-  const isTrial = !isAuthenticated || !coupleId;
+  const isTrial = !isAuthenticated;
   const displayCategories = isTrial ? MOCK_CATEGORIES : (categories ?? []);
 
   const expenseByCategory = (allExpenses ?? []).reduce<Record<string, { total: number; count: number }>>(
