@@ -271,3 +271,5 @@ export type AnonymousStat = Database["public"]["Tables"]["anonymous_stats"]["Row
 export type InsertExpense = Database["public"]["Tables"]["expenses"]["Insert"];
 export type UpdateExpense = Database["public"]["Tables"]["expenses"]["Update"];
 export type InsertCategory = Database["public"]["Tables"]["categories"]["Insert"];
+export type InsertSchedule = Database["public"]["Tables"]["schedules"]["Insert"];
+export type UpdateSchedule = Database["public"]["Tables"]["schedules"]["Update"];

@@ -6,8 +6,9 @@ import { cn } from "@/shared/lib/cn";
 
 const tabs = [
   { href: "/home", label: "홈", icon: HomeIcon },
-  { href: "/explore", label: "탐색", icon: SearchIcon },
   { href: "/manage", label: "관리", icon: WalletIcon },
+  { href: "/schedule", label: "일정", icon: CalendarIcon },
+  { href: "/explore", label: "탐색", icon: SearchIcon },
   { href: "/settings", label: "설정", icon: SettingsIcon },
 ] as const;
 
@@ -66,6 +67,17 @@ function WalletIcon({ active }: { active: boolean }) {
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.5 : 1.5} strokeLinecap="round" strokeLinejoin="round">
       <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
       <line x1="1" y1="10" x2="23" y2="10" />
+    </svg>
+  );
+}
+
+function CalendarIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.5 : 1.5} strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
     </svg>
   );
 }

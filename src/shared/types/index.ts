@@ -9,6 +9,8 @@ export type {
   InsertExpense,
   UpdateExpense,
   InsertCategory,
+  InsertSchedule,
+  UpdateSchedule,
 } from "./database";
 
 /** Default wedding categories */
