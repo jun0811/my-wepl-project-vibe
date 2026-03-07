@@ -23,7 +23,7 @@ export function GuideChecklist({ items }: GuideChecklistProps) {
     <Card>
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-neutral-700">
-          결혼 준비 가이드
+          웨플 시작 가이드
         </h3>
         <span className="text-xs font-medium text-primary-500">
           {completedCount}/{items.length} 완료

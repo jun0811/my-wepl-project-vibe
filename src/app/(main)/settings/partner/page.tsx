@@ -140,19 +140,49 @@ export default function PartnerPage() {
     <div className="hide-scrollbar overflow-y-auto px-5 pt-6 pb-4">
       <TopBar title="파트너 초대" onBack={() => router.back()} />
 
-      {/* Guide */}
-      <Card className="mb-4">
-        <div className="text-center">
-          <p className="text-4xl">💑</p>
-          <p className="mt-3 text-base font-semibold text-neutral-800">
-            파트너와 함께 관리해보세요
-          </p>
-          <p className="mt-2 text-sm leading-relaxed text-neutral-500">
-            커플 코드를 공유하거나 입력하면<br />
-            같은 예산과 지출을 함께 볼 수 있어요
-          </p>
-        </div>
-      </Card>
+      {/* Connected partner info */}
+      {profile?.partner ? (
+        <Card className="mb-4">
+          <div className="flex items-center gap-4">
+            {profile.partner.avatar_url ? (
+              <img
+                src={profile.partner.avatar_url}
+                alt=""
+                className="h-14 w-14 rounded-full object-cover"
+              />
+            ) : (
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary-100 text-xl font-bold text-primary-500">
+                {profile.partner.nickname?.charAt(0) ?? "?"}
+              </div>
+            )}
+            <div className="flex-1">
+              <p className="text-base font-semibold text-neutral-800">
+                {profile.partner.nickname ?? "파트너"}
+              </p>
+              <p className="mt-0.5 text-sm text-neutral-500">
+                {profile.partner.role === "bride" ? "신부" : profile.partner.role === "groom" ? "신랑" : ""}
+                {profile.partner.role ? " · " : ""}연결됨
+              </p>
+            </div>
+            <div className="flex h-8 items-center rounded-full bg-green-50 px-3 text-xs font-medium text-green-600">
+              연결 완료
+            </div>
+          </div>
+        </Card>
+      ) : (
+        <Card className="mb-4">
+          <div className="text-center">
+            <p className="text-4xl">💑</p>
+            <p className="mt-3 text-base font-semibold text-neutral-800">
+              파트너와 함께 관리해보세요
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-neutral-500">
+              커플 코드를 공유하거나 입력하면<br />
+              같은 예산과 지출을 함께 볼 수 있어요
+            </p>
+          </div>
+        </Card>
+      )}
 
       {/* My Couple Code */}
       {profile?.couple_id && (

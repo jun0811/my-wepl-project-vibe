@@ -22,6 +22,7 @@ import {
 export default function HomePage() {
   const { isAuthenticated, isLoading, profile } = useIsAuthenticated();
   const couple = profile?.couples ?? null;
+  const partner = profile?.partner ?? null;
   const coupleId = profile?.couple_id ?? "";
 
   const { data: categories = [] } = useCategories(coupleId);
@@ -121,7 +122,11 @@ export default function HomePage() {
         {dday !== null ? (
           <div className="rounded-2xl bg-gradient-to-br from-primary-50 to-primary-100 px-5 py-5">
             <p className="text-sm font-medium text-primary-400">
-              {profile?.nickname ? `${profile.nickname}님의 결혼식까지` : "우리의 결혼식까지"}
+              {profile?.nickname && partner?.nickname
+                ? `${profile.nickname} & ${partner.nickname}의 결혼식까지`
+                : profile?.nickname
+                  ? `${profile.nickname}님의 결혼식까지`
+                  : "우리의 결혼식까지"}
             </p>
             <p className="mt-1 text-4xl font-bold text-primary-600">{formatDday(dday)}</p>
             <div className="mt-3 flex flex-col gap-0.5">
@@ -143,10 +148,11 @@ export default function HomePage() {
       {/* Guide Checklist - hide when all completed */}
       {isAuthenticated && (() => {
         const guideItems = [
+          { label: "결혼 날짜 설정하기", completed: !!couple?.wedding_date, href: "/settings/wedding-info" },
           { label: "총 예산 설정하기", completed: totalBudget > 0, href: "/settings/budget" },
           { label: "카테고리 예산 배분하기", completed: categories.some((c) => c.budget_amount > 0), href: "/settings/budget" },
           { label: "첫 지출 기록하기", completed: expenses.length > 0, href: "/manage" },
-          { label: "파트너 초대하기", completed: false, href: "/settings/partner" },
+          { label: "파트너 초대하기", completed: !!partner, href: "/settings/partner" },
           { label: "일정 등록하기", completed: schedules.length > 0, href: "/schedule" },
         ];
         if (guideItems.every((i) => i.completed)) return null;

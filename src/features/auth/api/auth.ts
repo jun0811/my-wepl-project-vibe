@@ -2,7 +2,8 @@ import { createClient } from "@/shared/lib/supabase";
 import type { Provider } from "@supabase/supabase-js";
 import type { Profile, Couple } from "@/shared/types";
 
-export type ProfileWithCouple = Profile & { couples: Couple | null };
+export type PartnerProfile = Pick<Profile, "id" | "nickname" | "avatar_url" | "role">;
+export type ProfileWithCouple = Profile & { couples: Couple | null; partner: PartnerProfile | null };
 
 export async function signInWithKakao() {
   const supabase = createClient();
@@ -59,16 +60,27 @@ export async function getProfile(): Promise<ProfileWithCouple | null> {
   if (!profile) return null;
 
   let couple: Couple | null = null;
+  let partner: PartnerProfile | null = null;
+
   if (profile.couple_id) {
-    const { data } = await supabase
-      .from("couples")
-      .select()
-      .eq("id", profile.couple_id)
-      .single<Couple>();
-    couple = data;
+    const [coupleRes, partnerRes] = await Promise.all([
+      supabase
+        .from("couples")
+        .select()
+        .eq("id", profile.couple_id)
+        .single<Couple>(),
+      supabase
+        .from("profiles")
+        .select("id, nickname, avatar_url, role")
+        .eq("couple_id", profile.couple_id)
+        .neq("id", user.id)
+        .maybeSingle<PartnerProfile>(),
+    ]);
+    couple = coupleRes.data;
+    partner = partnerRes.data;
   }
 
-  return { ...profile, couples: couple };
+  return { ...profile, couples: couple, partner };
 }
 
 export async function deleteAccount(): Promise<void> {

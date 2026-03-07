@@ -10,7 +10,6 @@ import Link from "next/link";
 const MENU_ITEMS = [
   { label: "결혼 정보 수정", href: "/settings/wedding-info" },
   { label: "예산 설정", href: "/settings/budget" },
-  { label: "파트너 초대", href: "/settings/partner" },
   { label: "기능 소개", href: "/settings/about" },
   { label: "이용약관", href: "/settings/terms" },
   { label: "개인정보처리방침", href: "/settings/privacy" },
@@ -119,6 +118,54 @@ export default function SettingsPage() {
           </div>
         )}
       </Card>
+
+      {/* Partner */}
+      {isAuthenticated && (
+        <Link href="/settings/partner">
+          {profile?.partner ? (
+            <Card className="mb-5 flex items-center gap-3">
+              {profile.partner.avatar_url ? (
+                <img
+                  src={profile.partner.avatar_url}
+                  alt=""
+                  className="h-10 w-10 rounded-full object-cover"
+                />
+              ) : (
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary-100 text-sm font-bold text-secondary-600">
+                  {profile.partner.nickname?.charAt(0) ?? "?"}
+                </div>
+              )}
+              <div className="flex-1">
+                <p className="text-sm font-medium text-neutral-800">
+                  {profile.partner.nickname ?? "파트너"}
+                </p>
+                <p className="text-xs text-neutral-400">함께 관리 중</p>
+              </div>
+              <svg className="h-4 w-4 text-neutral-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </Card>
+          ) : (
+            <Card className="mb-5 flex items-center gap-3 border border-dashed border-primary-200 bg-primary-50/50">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100">
+                <svg className="h-5 w-5 text-primary-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4-4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <line x1="19" y1="8" x2="19" y2="14" />
+                  <line x1="22" y1="11" x2="16" y2="11" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-primary-600">파트너를 초대해보세요</p>
+                <p className="text-xs text-neutral-400">함께 예산과 지출을 관리할 수 있어요</p>
+              </div>
+              <svg className="h-4 w-4 text-primary-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </Card>
+          )}
+        </Link>
+      )}
 
       {/* Menu */}
       <Card padding="sm">
