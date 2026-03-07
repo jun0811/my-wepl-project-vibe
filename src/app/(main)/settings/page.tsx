@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Card, Button } from "@/shared/ui";
 import { InstallBanner } from "@/shared/ui/install-banner";
 import { KakaoShareButton } from "@/shared/ui/kakao-share";
-import { useIsAuthenticated, useSignOut, useUpdateNickname } from "@/features/auth";
+import { useIsAuthenticated, useSignOut, useUpdateNickname, useDeleteAccount } from "@/features/auth";
 import Link from "next/link";
 
 const MENU_ITEMS = [
@@ -20,6 +20,7 @@ export default function SettingsPage() {
   const { isAuthenticated, isLoading, profile } = useIsAuthenticated();
   const { mutate: signOut, isPending: isSigningOut } = useSignOut();
   const { mutate: updateNickname, isPending: isUpdatingNickname } = useUpdateNickname();
+  const { mutate: deleteAccount, isPending: isDeleting } = useDeleteAccount();
   const [isEditingNickname, setIsEditingNickname] = useState(false);
   const [nicknameInput, setNicknameInput] = useState("");
 
@@ -151,6 +152,23 @@ export default function SettingsPage() {
                 className="flex w-full items-center px-1 py-3.5 text-sm text-error disabled:opacity-50"
               >
                 {isSigningOut ? "로그아웃 중..." : "로그아웃"}
+              </button>
+            </li>
+          )}
+
+          {/* Delete Account */}
+          {isAuthenticated && (
+            <li>
+              <button
+                onClick={() => {
+                  if (window.confirm("정말 탈퇴하시겠어요?\n모든 데이터가 삭제되며 복구할 수 없습니다.")) {
+                    deleteAccount();
+                  }
+                }}
+                disabled={isDeleting}
+                className="flex w-full items-center px-1 py-3.5 text-sm text-neutral-400 disabled:opacity-50"
+              >
+                {isDeleting ? "탈퇴 처리 중..." : "회원 탈퇴"}
               </button>
             </li>
           )}

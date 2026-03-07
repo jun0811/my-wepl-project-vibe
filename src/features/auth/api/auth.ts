@@ -71,6 +71,13 @@ export async function getProfile(): Promise<ProfileWithCouple | null> {
   return { ...profile, couples: couple };
 }
 
+export async function deleteAccount(): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase.rpc("delete_user_account");
+  if (error) throw error;
+  await supabase.auth.signOut();
+}
+
 export async function updateNickname(nickname: string): Promise<void> {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
