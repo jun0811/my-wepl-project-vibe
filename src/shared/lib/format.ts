@@ -80,3 +80,20 @@ export function formatDday(days: number): string {
   if (days === 0) return "D-Day";
   return `D+${Math.abs(days)}`;
 }
+
+/**
+ * Sanitize avatar URL to prevent XSS via javascript:/data: protocols
+ * Only allows https: URLs (and http: for localhost dev)
+ */
+export function safeAvatarUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol === "https:" || parsed.protocol === "http:") {
+      return url;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}

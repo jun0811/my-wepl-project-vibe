@@ -254,8 +254,36 @@ export type Database = {
         Relationships: [];
       };
     };
-    Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Views: {
+      category_averages: {
+        Row: {
+          region: string | null;
+          category_name: string;
+          data_count: number;
+          avg_amount: number;
+          median_amount: number;
+          min_amount: number;
+          max_amount: number;
+          p25_amount: number;
+          p75_amount: number;
+        };
+        Relationships: [];
+      };
+    };
+    Functions: {
+      find_couple_by_code: {
+        Args: { p_code: string };
+        Returns: string | null;
+      };
+      join_partner_couple: {
+        Args: { p_target_couple_id: string };
+        Returns: undefined;
+      };
+      delete_user_account: {
+        Args: Record<string, never>;
+        Returns: undefined;
+      };
+    };
     Enums: Record<string, never>;
   };
 };

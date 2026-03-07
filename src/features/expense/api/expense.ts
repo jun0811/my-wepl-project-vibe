@@ -32,9 +32,14 @@ export async function getExpenses(coupleId: string, categoryId?: string) {
 
 export async function createExpense(expense: InsertExpense) {
   const supabase = createClient();
+
+  // Enforce created_by from authenticated session, not client input
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
   const { data, error } = await supabase
     .from("expenses")
-    .insert(expense)
+    .insert({ ...expense, created_by: user.id })
     .select()
     .single<Expense>();
 

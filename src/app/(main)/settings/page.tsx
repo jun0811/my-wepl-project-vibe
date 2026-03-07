@@ -5,6 +5,7 @@ import { Card, Button } from "@/shared/ui";
 import { InstallBanner } from "@/shared/ui/install-banner";
 import { KakaoShareButton } from "@/shared/ui/kakao-share";
 import { useIsAuthenticated, useSignOut, useUpdateNickname, useDeleteAccount } from "@/features/auth";
+import { safeAvatarUrl } from "@/shared/lib/format";
 import Link from "next/link";
 
 const MENU_ITEMS = [
@@ -40,9 +41,9 @@ export default function SettingsPage() {
         {isAuthenticated ? (
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-100">
-              {profile?.avatar_url ? (
+              {safeAvatarUrl(profile?.avatar_url) ? (
                 <img
-                  src={profile.avatar_url}
+                  src={safeAvatarUrl(profile?.avatar_url)!}
                   alt="프로필"
                   className="h-12 w-12 rounded-full object-cover"
                 />
@@ -124,9 +125,9 @@ export default function SettingsPage() {
         <Link href="/settings/partner">
           {profile?.partner ? (
             <Card className="mb-5 flex items-center gap-3">
-              {profile.partner.avatar_url ? (
+              {safeAvatarUrl(profile.partner.avatar_url) ? (
                 <img
-                  src={profile.partner.avatar_url}
+                  src={safeAvatarUrl(profile.partner.avatar_url)!}
                   alt=""
                   className="h-10 w-10 rounded-full object-cover"
                 />

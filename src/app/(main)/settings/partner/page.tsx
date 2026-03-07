@@ -7,6 +7,7 @@ import { Card, Button, TopBar } from "@/shared/ui";
 import { useIsAuthenticated } from "@/features/auth";
 import { KakaoShareButton } from "@/shared/ui/kakao-share";
 import { createClient } from "@/shared/lib/supabase";
+import { safeAvatarUrl } from "@/shared/lib/format";
 
 export default function PartnerPage() {
   const router = useRouter();
@@ -60,66 +61,26 @@ export default function PartnerPage() {
     try {
       const supabase = createClient();
 
-      // Find couple by code prefix
-      const { data: couples } = await supabase
-        .from("couples")
-        .select("id")
-        .limit(100);
+      // Find couple by code prefix (server-side filter, no bulk fetch)
+      const { data: targetCouple, error: lookupError } = await supabase
+        .rpc("find_couple_by_code", { p_code: code });
 
-      const targetCouple = couples?.find(
-        (c) => c.id.slice(0, 8).toLowerCase() === code,
-      );
-
-      if (!targetCouple) {
+      if (lookupError || !targetCouple) {
         setJoinError("해당 커플 코드를 찾을 수 없어요");
         setIsJoining(false);
         return;
       }
 
-      const myOldCoupleId = profile?.couple_id;
+      // Join couple atomically via RPC
+      const { error: rpcError } = await supabase
+        .rpc("join_partner_couple", {
+          p_target_couple_id: targetCouple,
+        });
 
-      // Update my profile to new couple
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .update({ couple_id: targetCouple.id })
-        .eq("id", profile!.id);
-
-      if (profileError) {
+      if (rpcError) {
         setJoinError("연결에 실패했어요. 다시 시도해주세요.");
         setIsJoining(false);
         return;
-      }
-
-      // Move my expenses to new couple
-      if (myOldCoupleId && myOldCoupleId !== targetCouple.id) {
-        await supabase
-          .from("expenses")
-          .update({ couple_id: targetCouple.id } as Record<string, unknown>)
-          .eq("couple_id", myOldCoupleId)
-          .eq("created_by", profile!.id);
-
-        await supabase
-          .from("schedules")
-          .update({ couple_id: targetCouple.id } as Record<string, unknown>)
-          .eq("couple_id", myOldCoupleId);
-
-        // Check if old couple has no other members
-        const { data: remainingMembers } = await supabase
-          .from("profiles")
-          .select("id")
-          .eq("couple_id", myOldCoupleId);
-
-        if (!remainingMembers || remainingMembers.length === 0) {
-          // Delete old categories & couple (expenses already moved)
-          await supabase
-            .from("categories")
-            .delete()
-            .eq("couple_id", myOldCoupleId);
-          await supabase
-            .from("couples")
-            .delete()
-            .eq("id", myOldCoupleId);
-        }
       }
 
       // Refresh data
@@ -144,9 +105,9 @@ export default function PartnerPage() {
       {profile?.partner ? (
         <Card className="mb-4">
           <div className="flex items-center gap-4">
-            {profile.partner.avatar_url ? (
+            {safeAvatarUrl(profile.partner.avatar_url) ? (
               <img
-                src={profile.partner.avatar_url}
+                src={safeAvatarUrl(profile.partner.avatar_url)!}
                 alt=""
                 className="h-14 w-14 rounded-full object-cover"
               />
