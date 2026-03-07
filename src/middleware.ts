@@ -10,8 +10,8 @@ const TRIAL_ROUTES = ["/home", "/explore"];
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Skip public routes and landing page
-  if (pathname === "/" || PUBLIC_ROUTES.some((route) => pathname.startsWith(route))) {
+  // Skip auth callback (no session check needed)
+  if (pathname.startsWith("/auth/callback")) {
     return NextResponse.next();
   }
 
@@ -38,13 +38,25 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
+  // Logged-in users: redirect landing and login to /home
+  if (user && (pathname === "/" || pathname === "/login")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/home";
+    return NextResponse.redirect(url);
+  }
+
+  // Landing and login: allow without auth
+  if (pathname === "/" || pathname === "/login") {
+    return supabaseResponse;
+  }
+
   // Allow trial mode routes without auth
   if (!user && TRIAL_ROUTES.some((route) => pathname.startsWith(route))) {
     return supabaseResponse;
   }
 
   // Redirect unauthenticated users to login
-  if (!user && !TRIAL_ROUTES.some((route) => pathname.startsWith(route))) {
+  if (!user) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
