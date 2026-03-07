@@ -19,7 +19,7 @@ interface CostBarChartProps {
 
 function formatAmount(value: number): string {
   if (value >= 10000) return `${Math.round(value / 10000)}만`;
-  return `${value}`;
+  return `${Math.round(value)}`;
 }
 
 export function CostBarChart({ data, myExpenses }: CostBarChartProps) {

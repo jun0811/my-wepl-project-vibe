@@ -6,7 +6,7 @@ import { formatCurrency } from "@/shared/lib/format";
 import { REGIONS, type Region } from "@/shared/types";
 import { useIsAuthenticated } from "@/features/auth";
 import { useCategories, useExpenses } from "@/features/expense";
-import { useCategoryAverages } from "@/features/explore";
+import { useCategoryAverages, type CategoryAverage } from "@/features/explore";
 import { CostBarChart } from "@/features/explore/components/cost-bar-chart";
 import { PriceRangeCard } from "@/features/explore/components/price-range-card";
 import { BudgetComparison } from "@/features/explore/components/budget-comparison";
@@ -52,10 +52,40 @@ export default function ExplorePage() {
     }
   }
 
-  const totalAverage = stats.length > 0
-    ? stats.reduce((sum, s) => sum + s.avg_amount, 0)
-    : 0;
-  const totalDataCount = stats.reduce((sum, s) => sum + s.data_count, 0);
+  // When no region filter, stats has rows per region×category — deduplicate by category
+  // using weighted average (weighted by data_count) to get a single row per category
+  const aggregatedStats = Object.values(
+    stats.reduce<Record<string, { totalAmount: number; totalMedian: number; totalCount: number; min: number; max: number; totalP25: number; totalP75: number; name: string }>>((acc, s) => {
+      if (!acc[s.category_name]) {
+        acc[s.category_name] = { name: s.category_name, totalAmount: 0, totalMedian: 0, totalCount: 0, min: s.min_amount, max: s.max_amount, totalP25: 0, totalP75: 0 };
+      }
+      const entry = acc[s.category_name];
+      entry.totalAmount += s.avg_amount * s.data_count;
+      entry.totalMedian += s.median_amount * s.data_count;
+      entry.totalP25 += s.p25_amount * s.data_count;
+      entry.totalP75 += s.p75_amount * s.data_count;
+      entry.totalCount += s.data_count;
+      entry.min = Math.min(entry.min, s.min_amount);
+      entry.max = Math.max(entry.max, s.max_amount);
+      return acc;
+    }, {}),
+  ).map((entry): CategoryAverage => ({
+    region: null,
+    category_name: entry.name,
+    data_count: entry.totalCount,
+    avg_amount: entry.totalCount > 0 ? entry.totalAmount / entry.totalCount : 0,
+    median_amount: entry.totalCount > 0 ? entry.totalMedian / entry.totalCount : 0,
+    min_amount: entry.min,
+    max_amount: entry.max,
+    p25_amount: entry.totalCount > 0 ? entry.totalP25 / entry.totalCount : 0,
+    p75_amount: entry.totalCount > 0 ? entry.totalP75 / entry.totalCount : 0,
+  }));
+
+  // Use aggregated (deduplicated) stats for rendering
+  const displayStats = selectedRegion ? stats : aggregatedStats;
+
+  const totalAverage = displayStats.reduce((sum, s) => sum + s.avg_amount, 0);
+  const totalDataCount = displayStats.reduce((sum, s) => sum + s.data_count, 0);
 
   return (
     <div className="hide-scrollbar overflow-y-auto px-5 pt-6 pb-4">
@@ -75,7 +105,7 @@ export default function ExplorePage() {
       <section className="mb-5">
         <div className="flex flex-wrap gap-2">
           <Chip
-            label="전체"
+            label="전국"
             selected={!selectedRegion}
             onClick={() => setSelectedRegion(undefined)}
             size="sm"
@@ -96,7 +126,7 @@ export default function ExplorePage() {
         <div className="flex h-40 items-center justify-center">
           <p className="text-sm text-neutral-400">통계를 불러오는 중...</p>
         </div>
-      ) : stats.length === 0 ? (
+      ) : displayStats.length === 0 ? (
         <Card className="py-8 text-center">
           <p className="text-sm text-neutral-400">
             {selectedRegion
@@ -116,7 +146,7 @@ export default function ExplorePage() {
                 {selectedRegion ? `${selectedRegion} ` : ""}평균 결혼 비용
               </p>
               <p className="mt-1 text-3xl font-bold text-primary-700">
-                {formatCurrency(totalAverage)}원
+                {formatCurrency(Math.round(totalAverage))}원
               </p>
             </div>
           </Card>
@@ -127,7 +157,7 @@ export default function ExplorePage() {
               카테고리별 비교
             </h3>
             <Card>
-              <CostBarChart data={stats} myExpenses={isAuthenticated ? myExpensesByCategory : undefined} />
+              <CostBarChart data={displayStats} myExpenses={isAuthenticated ? myExpensesByCategory : undefined} />
             </Card>
           </section>
 
@@ -137,7 +167,7 @@ export default function ExplorePage() {
               카테고리별 가격 분포
             </h3>
             <div className="space-y-2.5">
-              {stats.map((stat) => (
+              {displayStats.map((stat) => (
                 <PriceRangeCard key={stat.category_name} stat={stat} />
               ))}
             </div>
@@ -154,7 +184,7 @@ export default function ExplorePage() {
           </Card>
 
           {/* Budget vs Average Comparison */}
-          {isAuthenticated && userCategories.length > 0 && stats.length > 0 && (
+          {isAuthenticated && userCategories.length > 0 && displayStats.length > 0 && (
             <section className="mt-5">
               <h3 className="mb-3 text-sm font-semibold text-neutral-700">
                 내 예산 vs 평균
@@ -162,7 +192,7 @@ export default function ExplorePage() {
               <Card>
                 <BudgetComparison
                   categories={userCategories.map((c) => ({ name: c.name, budget: c.budget_amount }))}
-                  averages={stats}
+                  averages={displayStats}
                 />
               </Card>
             </section>

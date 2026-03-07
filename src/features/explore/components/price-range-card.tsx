@@ -25,10 +25,10 @@ export function PriceRangeCard({ stat }: PriceRangeCardProps) {
 
       <div className="mb-1 flex items-baseline justify-between">
         <span className="text-lg font-bold text-primary-600">
-          {formatCurrency(stat.avg_amount)}원
+          {formatCurrency(Math.round(stat.avg_amount))}원
         </span>
         <span className="text-xs text-neutral-400">
-          중앙값 {formatCurrency(stat.median_amount)}원
+          중앙값 {formatCurrency(Math.round(stat.median_amount))}원
         </span>
       </div>
 
@@ -46,8 +46,8 @@ export function PriceRangeCard({ stat }: PriceRangeCardProps) {
         />
       </div>
       <div className="flex justify-between text-xs text-neutral-400">
-        <span>{formatCurrency(stat.min_amount)}</span>
-        <span>{formatCurrency(stat.max_amount)}</span>
+        <span>{formatCurrency(Math.round(stat.min_amount))}</span>
+        <span>{formatCurrency(Math.round(stat.max_amount))}</span>
       </div>
     </Card>
   );

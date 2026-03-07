@@ -89,8 +89,11 @@ export function safeAvatarUrl(url: string | null | undefined): string | null {
   if (!url) return null;
   try {
     const parsed = new URL(url);
-    if (parsed.protocol === "https:" || parsed.protocol === "http:") {
-      return url;
+    if (parsed.protocol === "https:") return url;
+    // Upgrade http to https (e.g. Kakao CDN http://k.kakaocdn.net)
+    if (parsed.protocol === "http:") {
+      parsed.protocol = "https:";
+      return parsed.toString();
     }
     return null;
   } catch {
